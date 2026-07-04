@@ -1,0 +1,133 @@
+# =============================================================================
+# Resume-Agent OpenSpec 项目配置
+# -----------------------------------------------------------------------------
+# 本文件定义 OpenSpec 工作流在 Resume-Agent 仓库中的运行配置。
+# schema 选 spec-driven：每个变更以 proposal/design/tasks 三件套组织，
+# 强制先写规格再动手，避免「边写边改」导致的设计漂移。
+# =============================================================================
+
+project:
+  name: resume-agent
+  description: 开源个人简历管理系统 —— 把简历当代码仓库来管
+  version: 0.1.0-mvp
+  license: MIT
+  repository: https://github.com/resume-agent/resume-agent
+
+# -----------------------------------------------------------------------------
+# schema：spec-driven
+#   - 每个变更目录下必须包含 proposal.md / design.md / tasks.md
+#   - proposal 先行，design 次之，tasks 最后
+#   - tasks 全部勾选且 spec 验收通过后，变更方可归档（archived）
+# -----------------------------------------------------------------------------
+schema: spec-driven
+
+# -----------------------------------------------------------------------------
+# context：注入到每个变更规格的全局上下文
+#   下方字段会被 OpenSpec 工具读取，并作为「硬约束」写入每份规格的头部，
+#   确保所有变更设计都遵循同一套技术栈与质量基线。
+# -----------------------------------------------------------------------------
+context:
+  # ---- 技术栈 ----
+  tech_stack:
+    frontend:
+      framework: React 18
+      bundler: Vite 5
+      language: TypeScript 5
+      styling: Tailwind CSS v4（@theme 指令注入设计令牌）
+      canvas: React Flow（版本树可视化）
+      package_manager: pnpm（pnpm-lock.yaml 锁定依赖）
+      node_requirement: ">=20"
+
+    backend:
+      framework: FastAPI
+      language: Python 3.11+
+      agent: LangGraph（检索→反思→撰写 工作流）
+      dependency_manager: uv（uv.lock 锁定依赖）
+      runtime: uvicorn
+
+    data:
+      metadata_db: SQLite（版本树/节点元数据/上传记录）
+      vector_db: Chroma（嵌入式 PersistentClient 模式，无独立 server）
+      filesystem: 上传文件、生成 PDF 的本地存储
+      data_root: "~/.resume-agent"
+
+    deployment:
+      strategy: Docker Compose 单容器
+      image_size_target: "<=500MB"
+      deploy_time_target: "<=15min"
+      port: 5173（前端 + API 同端口，FastAPI 静态托管前端 build 产物）
+
+    ai:
+      embedding: OpenAI text-embedding-3-small（或 DeepSeek）
+      llm: GPT-4o / Claude 3.5 Sonnet（用户可配置）
+      multimodal: GPT-4o Vision（JD 截图提取）
+
+  # ---- 部署与运行 ----
+  deployment:
+    primary: docker-compose（docker compose up 一键启动）
+    secondary: make dev（源码热更新开发）
+    data_volume: "~/.resume-agent 挂载到容器，容器删除数据不丢"
+    config_injection: 全部配置走环境变量 + .env 文件
+
+  # ---- 测试信息 ----
+  testing:
+    backend:
+      framework: pytest
+      coverage_target: ">=80%"
+      scope:
+        - 单元测试：parsers / rag / agents / api 路由
+        - 集成测试：上传→解析→入树 全链路
+        - 契约测试：API 端点 schema 校验
+      lint: ruff
+      typecheck: mypy（严格模式，新增代码必须零错误）
+
+    frontend:
+      framework: vitest + @testing-library/react
+      coverage_target: ">=70%"
+      scope:
+        - 组件单元测试（GlobalToolbar / 版本树节点渲染）
+        - 钩子测试（useVersionTree / useKnowledgeBase）
+        - E2E 烟雾测试（playwright，首屏可访问 + 上传链路）
+      lint: eslint + prettier
+      typecheck: tsc --noEmit（零错误红线）
+
+    e2e:
+      framework: playwright
+      smoke: "clone → docker compose up → 5173 可访问 → 引导页可见"
+      platforms: ["macos-latest", "ubuntu-22.04"]
+
+    benchmark:
+      - 简历解析成功率 >=90%（100 份测试集）
+      - 语义检索 Precision@5 >=85%（50 条查询）
+      - JD 截图提取准确率 >=80%（30 张截图）
+      - 端到端生成延迟 <=30s P95
+      - 版本树渲染 <=100ms（节点数<=50）
+
+  # ---- 代码规范 ----
+  conventions:
+    branch_naming: "feat/<scope> | fix/<scope> | chore/<scope>"
+    commit_style: Conventional Commits（feat: / fix: / docs: / refactor:）
+    pr_requires: "CI 全绿 + 至少 1 人 review + spec tasks 全勾选"
+    doc_language: 中文（规格、PRD、README），代码注释中英均可
+
+# -----------------------------------------------------------------------------
+# changes：变更目录约定
+# -----------------------------------------------------------------------------
+changes:
+  location: openspec/changes/
+  lifecycle:
+    - proposed      # 提案阶段，待 review
+    - accepted      # 已接受，进入实施
+    - in-progress   # 实施中
+    - archived      # 已完成并归档
+  naming: kebab-case（如 project-scaffold / resume-upload / rag-index）
+
+# -----------------------------------------------------------------------------
+# gates：变更合并的硬性门槛
+# -----------------------------------------------------------------------------
+gates:
+  - spec-complete: proposal + design + tasks 三件齐备
+  - tasks-checked: tasks.md 全部勾选
+  - ci-green: lint + typecheck + test 全绿
+  - design-review: 至少 1 人确认 design.md 无架构风险
+  - rollback-doc: proposal.md 必须包含回滚方案
