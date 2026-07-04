@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume-Agent 智能体 · 产品需求说明</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e6e9ef; --sub:#9aa3b2;
+    --line:#2a2f3a; --accent:#7dd3fc; --accent2:#a78bfa; --green:#86efac; --amber:#fcd34d;
+    --mono:'SF Mono','JetBrains Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans CJK SC','Segoe UI',sans-serif;line-height:1.75;font-size:15px}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 32px 96px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:.5px}
+  h2{font-size:21px;margin:42px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line);color:#fff}
+  h3{font-size:16.5px;margin:26px 0 10px;color:var(--accent)}
+  h4{font-size:14.5px;margin:18px 0 8px;color:var(--ink)}
+  p{margin:10px 0;color:#cdd3df}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:8px}
+  .tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:4px;background:var(--panel2);color:var(--sub);border:1px solid var(--line);margin-right:6px}
+  .tag.hot{color:var(--amber);border-color:#5a4a1e}
+  code{font-family:var(--mono);font-size:13px;background:var(--panel2);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0;color:#cdd3df}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:#fff;font-weight:600}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  .callout{background:var(--panel);border-left:3px solid var(--accent);padding:14px 18px;border-radius:0 8px 8px 0;margin:16px 0}
+  .callout.warn{border-left-color:var(--amber)}
+  .callout.win{border-left-color:var(--green)}
+  .quote{font-size:16px;color:#fff;font-weight:500;line-height:1.6}
+
+  /* wireframe */
+  .wf{display:grid;grid-template-columns:210px 1fr 250px;gap:10px;margin:18px 0;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel)}
+  .wf-col{background:var(--panel2);border:1px dashed var(--line);border-radius:8px;padding:10px;min-height:360px;display:flex;flex-direction:column;gap:7px}
+  .wf-head{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:4px}
+  .wf-sub{font-size:11px;color:var(--sub);margin-top:2px}
+  .wf-box{background:rgba(125,211,252,.06);border:1px solid rgba(125,211,252,.2);border-radius:5px;padding:6px 8px;font-size:11.5px;color:#cdd3df}
+  .wf-box.violet{background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.25)}
+  .wf-box.green{background:rgba(134,239,172,.06);border-color:rgba(134,239,172,.22)}
+  .wf-box.amber{background:rgba(252,211,77,.06);border-color:rgba(252,211,77,.22)}
+  .wf-tree{flex:1;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:6px;padding:8px;font-family:var(--mono);font-size:11px;color:var(--green);display:flex;flex-direction:column;justify-content:center;gap:5px}
+  .wf-node{padding:3px 6px;border-radius:4px;background:rgba(134,239,172,.08);border:1px solid rgba(134,239,172,.2);display:inline-block;width:fit-content}
+  .wf-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .wf-branch{color:var(--sub);font-size:10px}
+  .wf-btn{display:inline-block;font-size:10.5px;padding:3px 8px;border-radius:4px;background:var(--accent);color:#001018;font-weight:600;width:fit-content}
+  .wf-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--sub)}
+  .wf-drag{border:1.5px dashed var(--line);border-radius:6px;padding:14px 8px;text-align:center;font-size:11px;color:var(--sub);min-height:54px;display:flex;align-items:center;justify-content:center}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+  .flow{display:flex;flex-direction:column;gap:0;margin:14px 0}
+  .flow-step{display:flex;gap:12px;align-items:flex-start}
+  .flow-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+  .flow-body{flex:1;padding-bottom:16px;border-left:1px solid var(--line);margin-left:12px;padding-left:16px}
+  .flow-step:last-child .flow-body{border-left:none}
+  .flow-title{font-weight:600;color:#fff;margin-bottom:3px}
+  .phase{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;margin-right:6px;font-weight:600}
+  .p1{background:rgba(252,211,77,.15);color:var(--amber)}
+  .p2{background:rgba(125,211,252,.15);color:var(--accent)}
+  .p3{background:rgba(167,139,250,.15);color:var(--accent2)}
+  .small{font-size:12.5px;color:var(--sub)}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Resume-Agent 智能体 · 产品需求说明</h1>
+<p class="meta">文档类型：产品需求说明（前端设计输入版）　|　状态：DRAFT　|　日期：2026-07-03　|　定位：开源个人简历管理系统</p>
+<p>
+  <span class="tag">0-to-1 产品</span>
+  <span class="tag">AI 产品</span>
+  <span class="tag hot">差异化：Git 式简历版本控制</span>
+</p>
+
+<h2>一、需求背景</h2>
+<p>一个认真求职的技术人手里从来不是「一份简历」，而是十几份针对不同公司、不同方向裁剪过的版本。三个月投下来，最好的项目经历散落在各处，基础信息改一次要手动同步十几个文件，最后连「腾讯那版到底突出了什么」都记不清。现有工具要么帮你把一份简历排版好看（Reactive Resume、OpenResume），要么帮你把简历对单个 JD 打分匹配（Teal、Huntr），没有人帮你管理这整片「简历森林」的版本演化。</p>
+<div class="callout warn">
+  <p style="margin:4px 0"><strong>核心痛点</strong>：多职位投递时，个人简历与岗位需求不匹配，且多版本之间混乱、难追溯、难复用。</p>
+  <p style="margin:4px 0;color:var(--sub);font-size:13px">证据强度：[PM 假设 / 个人痛点] — 待用户验证补充真实求职场景数据。</p>
+</div>
+<p>不解决的后果：求职者反复手工裁剪简历、丢失优质素材、无法沉淀投递经验，每次投递都从零开始。</p>
+
+<h2>二、产品定位与差异化</h2>
+<div class="callout win">
+  <p class="quote">把简历当代码仓库来管：Master 主干分化出方向分支，分支长出公司专属节点，改一次主干所有子分支自动继承。</p>
+</div>
+<p>Resume-Agent 的差异化在于管理「森林」而非生成「单棵树」。React Flow 可视化的 Git 树是产品的灵魂一击——目标用户（算法、安全、后端工程师）天天活在 Git 里，把简历当分支管理是他们的母语，这是模板工具和匹配工具都抄不走的身份认同。</p>
+<table>
+  <tr><th>赛道</th><th>代表产品</th><th>它们做什么</th><th>Resume-Agent 的差异</th></tr>
+  <tr><td>简历构建 / 模板</td><td>Reactive Resume、OpenResume</td><td>把一份简历排版好看、导出 PDF</td><td>不管单份排版，管多版本的分支与继承</td></tr>
+  <tr><td>AI 按 JD 匹配改简历</td><td>Teal、Huntr、Simplify</td><td>给单份简历打匹配分、按 JD 改写</td><td>匹配只是其中一个分支节点的生成动作，主线是版本树</td></tr>
+  <tr><td>简历版本控制</td><td>（空白）</td><td>无成熟产品</td><td>这是 Resume-Agent 独占的空白地</td></tr>
+</table>
+
+<h2>三、目标用户</h2>
+<ul>
+  <li><strong>技术门槛人才</strong>：算法工程师、网络安全研究员、核心后端研发、芯片工程师。熟悉 Git 工作流，对「分支/合并/Diff」概念天然亲切。</li>
+  <li><strong>高质量求职者</strong>：研究生、大厂跳槽人员、追求高成功率的精准投递人群。同时投递多个方向、多家公司，版本管理需求强烈。</li>
+</ul>
+<p class="small">使用前提：用户有至少一份历史简历，且愿意把求职素材沉淀进系统。隐私敏感——倾向本地优先存储。</p>
+
+<h2>四、整体架构：三栏布局</h2>
+<p>系统采用左—中—右三栏结构，三块功能独立、操作高效。中间栏最宽，承载核心的 Git 树画布；左栏窄，负责导航与资产输入；右栏中等，负责对外职位分析与反馈。下图为布局线框，标注了各区域组件与信息层级，供前端设计直接参照。</p>
+
+<div class="wf">
+  <!-- 左栏 -->
+  <div class="wf-col">
+    <div class="wf-head">左栏 · 导航与资产输入</div>
+    <div class="wf-box violet">Logo / Resume-Agent</div>
+    <div class="wf-box">
+      <div style="color:var(--accent2);font-weight:600;margin-bottom:3px">导航</div>
+      总览面板<br>简历版本分支<br>个人知识库(RAG)<br>职位截图分析<br>技能差距分析<br>设置 / 用户支持
+    </div>
+    <div class="wf-sub">资产冷启动</div>
+    <div class="wf-drag">拖入旧简历<br>PDF / Word</div>
+    <div class="wf-drag">拖入知识素材<br>周报 / 论文 / CTF / 博客</div>
+    <div class="wf-box green" style="margin-top:auto">知识库状态：128 切片已索引</div>
+  </div>
+
+  <!-- 中栏 -->
+  <div class="wf-col">
+    <div class="wf-head">中栏 · 核心控制与实时组装</div>
+    <div class="wf-row">
+      <div class="wf-box">主干：Master</div>
+      <div class="wf-box violet">方向：安全岗</div>
+      <div class="wf-box amber">节点：Tencent-研究员</div>
+    </div>
+    <div class="wf-tree">
+      <div class="wf-node">● Master 主库</div>
+      <div class="wf-branch">├─</div>
+      <div class="wf-row" style="padding-left:14px"><span class="wf-node">◐ 安全岗</span></div>
+      <div class="wf-branch">│　├─</div>
+      <div class="wf-row" style="padding-left:30px"><span class="wf-node">◉ Tencent-研究员</span></div>
+      <div class="wf-branch">│　└─</div>
+      <div class="wf-row" style="padding-left:30px"><span class="wf-node">○ Alibaba-安全</span></div>
+      <div class="wf-branch">└─</div>
+      <div class="wf-row" style="padding-left:14px"><span class="wf-node">◐ 算法岗</span></div>
+      <div class="wf-branch">　　└─</div>
+      <div class="wf-row" style="padding-left:30px"><span class="wf-node">○ ByteDance-算法</span></div>
+    </div>
+    <div class="wf-row">
+      <div class="wf-btn">为该岗位动态生成</div>
+      <div class="wf-btn ghost">版本对比 Diff</div>
+    </div>
+    <div class="wf-row">
+      <div class="wf-box">模板：经典学术 / 大厂技术 / 极简风</div>
+    </div>
+    <div class="wf-box" style="min-height:60px">PDF 预览（1 页，ATS 友好）</div>
+  </div>
+
+  <!-- 右栏 -->
+  <div class="wf-col">
+    <div class="wf-head">右栏 · 职位分析与成长反馈</div>
+    <div class="wf-drag">上传招聘截图<br>App / 海报 / 网页</div>
+    <div class="wf-box amber">
+      <div style="color:var(--amber);font-weight:600;margin-bottom:3px">JD 结构化提取</div>
+      技术栈：X 框架、Y 中间件<br>硬技能：…<br>软技能：…<br>加分项：…
+    </div>
+    <div class="wf-box">
+      <div style="color:#fff;font-weight:600;margin-bottom:3px">知识盲区报告</div>
+      <span style="color:var(--green)">✓ 已覆盖</span> X 框架基础<br>
+      <span style="color:var(--amber)">△ 部分缺口</span> X 的评分机制<br>
+      <span style="color:#f87171">✗ 未涉及</span> 静态导向图构建
+    </div>
+    <div class="wf-box violet" style="margin-top:auto">
+      <div style="color:var(--accent2);font-weight:600;margin-bottom:3px">AI 导师建议</div>
+      面试前补充：X 框架评分机制与静态导向图构建，参考开源项目 …
+    </div>
+  </div>
+</div>
+<div class="legend">
+  <span><span class="dot" style="background:rgba(125,211,252,.4)"></span>导航/输入</span>
+  <span><span class="dot" style="background:rgba(167,139,250,.4)"></span>AI 生成/反馈</span>
+  <span><span class="dot" style="background:rgba(134,239,172,.4)"></span>版本树/知识库</span>
+  <span><span class="dot" style="background:rgba(252,211,77,.4)"></span>JD/岗位分析</span>
+</div>
+
+<h2>五、功能需求（按栏划分）</h2>
+
+<h3>5.1 左侧栏 — 导航与个人资产知识库（RAG 底座）</h3>
+<p>左栏是整个产品的「燃料仓」，建立基于检索增强生成（RAG）的个人履历智能检索系统。</p>
+<table>
+  <tr><th style="width:32px">#</th><th style="width:150px">功能</th><th>描述</th></tr>
+  <tr><td>A1</td><td>导航系统</td><td>提供「总览面板 / 简历版本分支 / 个人知识库(RAG) / 职位截图分析 / 技能差距分析 / 设置 / 用户支持」入口，当前所在项高亮。点击切换中栏与右栏的对应视图。</td></tr>
+  <tr><td>A2</td><td>资产冷启动</td><td>用户拖入所有历史版本旧简历（PDF/Word）。系统反向解构出原子级经历块，智能去重、合并、清洗，自动构建初始知识库与初始树状图（生成 Master 主干 + 推断的方向分支）。</td></tr>
+  <tr><td>A3</td><td>资产养料注入</td><td>支持上传代码日志、项目周报、学术论文、CTF 比赛报告或博客链接，作为知识库的补充素材。</td></tr>
+  <tr><td>A4</td><td>智能存储</td><td>用向量数据库存储上述信息切片，支持语义检索。优先本地向量库或私有化部署，确保隐私安全。</td></tr>
+</table>
+<div class="callout"><p style="margin:4px 0"><strong>前端要点</strong>：左栏顶部固定 Logo 与导航列表；中段两个拖拽上传区（旧简历 / 知识素材）需有明显的拖入悬停态；底部常驻知识库索引状态指示器（切片数 / 索引进度）。</p></div>
+
+<h3>5.2 中间栏 — 树状版本控制（Resume Git）与智能生成</h3>
+<p>中栏是「中央枢纽」，用可视化方式管理简历演化，并按岗位动态组装。React Flow 树状画布是产品灵魂，需可缩放、可拖动、节点可点击进入编辑。</p>
+<table>
+  <tr><th style="width:32px">#</th><th style="width:150px">功能</th><th>描述</th></tr>
+  <tr><td>B1</td><td>树状版本画布</td><td>类 Git 树的可缩放界面。一个 Master 主库分支分化出不同方向分支（安全岗、算法岗），再分到公司专属节点（Tencent-研究员）。节点形态区分主干/方向/公司节点。</td></tr>
+  <tr><td>B2</td><td>上游继承</td><td>在 Master 主库修改基础信息，所有子分支自动集成更新，同时保留各子版本的公司专属描述不变。</td></tr>
+  <tr><td>B3</td><td>按需动态生成</td><td>选定一个岗位投递时：AI Agent 先从知识库检索相关经历；AI 面试官 Agent 反思审核经历是否真实（避免假大空）；AI 撰写 Agent 动态拼装并润色，生成卡在 1 页内的公司专属 PDF。</td></tr>
+  <tr><td>B4</td><td>模板管家</td><td>简历数据与排版分离（JSON-to-Resume）。一键在「经典学术 / 大厂技术 / 极简风」等 ATS 友好模板间切换，PDF 预览实时同步。</td></tr>
+  <tr><td>B5</td><td>版本对比</td><td>清晰展示某公司版简历相较另一版做了哪些项目替换与关键词突显。</td></tr>
+</table>
+<div class="callout"><p style="margin:4px 0"><strong>前端要点</strong>：画布占中栏主体高度；顶部面包屑显示当前节点路径（Master → 安全岗 → Tencent-研究员）；底部工具条放「为该岗位动态生成」「版本对比 Diff」主按钮与模板切换器；PDF 预览区可折叠或侧拉。</p></div>
+
+<h3>5.3 右侧栏 — 职位截图分析与 AI 求职导师</h3>
+<p>右栏是「对外接口」，分析外部招聘信息并对内部能力给出提升建议。</p>
+<table>
+  <tr><th style="width:32px">#</th><th style="width:150px">功能</th><th>描述</th></tr>
+  <tr><td>C1</td><td>多模态截图提取</td><td>用户上传招聘 App、朋友圈海报或网页的招聘截图。AI 自动识别并结构化提取 JD 中的技术栈、软硬技能要求与加分项。</td></tr>
+  <tr><td>C2</td><td>技能 Gap 分析</td><td>结合 C1 提取的岗位要求与个人知识库，生成不编造、不作弊的《知识盲区报告》。</td></tr>
+  <tr><td>C3</td><td>导师端反馈</td><td>当 JD 要求的某技术点在知识库未发现时，AI 导师明确指出差距，并反向输出面试前补充学习建议（含可参考的开源项目/资料方向）。</td></tr>
+</table>
+<div class="callout"><p style="margin:4px 0"><strong>前端要点</strong>：右栏自上而下三段——截图上传区、JD 结构化卡片、盲区报告 + 导师建议。盲区报告用三色状态标记（已覆盖 / 部分缺口 / 未涉及），导师建议可展开折叠。</p></div>
+
+<h2>六、核心交互流程</h2>
+<div class="flow">
+  <div class="flow-step">
+    <div class="flow-num">1</div>
+    <div class="flow-body">
+      <div class="flow-title">资产冷启动</div>
+      <p style="margin:2px 0">用户拖入多版旧简历 → 反向解构为原子经历块 → 去重合并清洗 → 生成初始知识库与初始 Git 树（Master + 推断方向分支）。</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">2</div>
+    <div class="flow-body">
+      <div class="flow-title">分支创建与继承</div>
+      <p style="margin:2px 0">从 Master 或方向分支新建公司节点 → 继承上游基础信息 → 用户仅编辑公司专属描述，基础信息由上游统一维护。</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">3</div>
+    <div class="flow-body">
+      <div class="flow-title">按岗位动态生成</div>
+      <p style="margin:2px 0">选定公司节点 → 上传/粘贴该岗位 JD 截图 → AI 检索知识库相关经历 → 反思审核真实性 → 撰写润色生成 1 页 PDF。</p>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">4</div>
+    <div class="flow-body">
+      <div class="flow-title">差距反馈与学习</div>
+      <p style="margin:2px 0">右栏生成知识盲区报告 → AI 导师输出面试前补充学习建议 → 用户沉淀新知识回灌知识库。</p>
+    </div>
+  </div>
+</div>
+
+<h2>七、技术方向参考（非约束性建议）</h2>
+<p class="small">以下为产品愿景中提及的技术方向，仅作设计/实现参考，不作为需求约束。最终技术选型由工程阶段决定。</p>
+<table>
+  <tr><th>层面</th><th>建议方向</th><th>理由</th></tr>
+  <tr><td>Agent 框架</td><td>LangGraph 或 LangChain</td><td>契合树状控制的图状工作流，支持反思与纠错机制</td></tr>
+  <tr><td>向量库</td><td>本地优先 Chroma 或 PGVector</td><td>隐私优先，适配技术用户对数据本地化的诉求</td></tr>
+  <tr><td>前端可视化</td><td>React Flow</td><td>成熟的节点图库，适合 Git 树画布的缩放与交互</td></tr>
+</table>
+<div class="callout warn"><p style="margin:4px 0"><strong>关于「AI 审核经历真实性」</strong>：LLM 无法真正验证经历是否客观发生过，只能检测 AI 套话、前后矛盾与夸大表述。需求文案中「审核经历是否真实」应理解为「检测套话与一致性」，避免对用户过度承诺。</p></div>
+
+<h2>八、给前端设计的提示</h2>
+<ul>
+  <li><strong>视觉调性</strong>：面向技术用户的开发者工具感，深色为主、信息密度较高、等宽字体点缀（呼应代码/Git 语境）。</li>
+  <li><strong>灵魂一击</strong>：中栏 Git 树画布是 README 截图、演示动图的核心画面，需最具视觉表现力——节点形态、分支连线、继承箭头要有设计感。</li>
+  <li><strong>三栏比例</strong>：建议左 18% / 中 52% / 右 30%，中栏最大化承载画布；窄屏可折叠左右栏为抽屉。</li>
+  <li><strong>状态完备</strong>：每个区域都需考虑空状态（无简历/无截图/无知识库）、加载态（解构中/生成中/索引中）、错误态（解析失败/生成失败）。</li>
+  <li><strong>待对齐细节</strong>：模板具体样式、Git 树节点交互细节、Diff 视图呈现方式、多端适配策略，留待后续与设计逐项确认。</li>
+</ul>
+
+</div>
+</body>
+</html>

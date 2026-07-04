@@ -1,0 +1,56 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.eggs/
+*.egg-info/
+*.egg
+dist/
+build/
+.pytest_cache/
+.coverage
+.htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# === Node ===
+node_modules/
+.vite/
+*.tsbuildinfo
+next-env.d.ts
+
+# === Environment & Secrets ===
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# === Runtime Data (本地用户数据，不入库) ===
+.resume-agent/
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# === OS ===
+Thumbs.db
+Desktop.ini
+
+# === Logs ===
+*.log
+logs/
+
+# === Temp ===
+tmp/
+temp/
+*.tmp

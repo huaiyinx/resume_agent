@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume-Agent · 智能简历工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d12;
+    --bg-2:#0d1117;
+    --panel:#11161e;
+    --panel-2:#161c26;
+    --panel-3:#1b2230;
+    --line:#222a36;
+    --line-2:#2c3444;
+    --ink:#e6edf3;
+    --ink-2:#c2cad6;
+    --sub:#7d8590;
+    --faint:#565f6d;
+    --green:#3fb950;
+    --green-dim:#238636;
+    --amber:#e3b341;
+    --amber-dim:#9e6a03;
+    --blue:#58a6ff;
+    --violet:#bc8cff;
+    --rose:#f85149;
+    --cyan:#39d0d8;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'IBM Plex Sans',-apple-system,sans-serif;
+    --serif:'IBM Plex Serif',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:14px;
+    line-height:1.5;
+    overflow:hidden;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.022) 1px, transparent 0);
+    background-size:22px 22px;
+  }
+
+  /* ===== Top bar ===== */
+  .topbar{
+    height:44px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:0 16px;
+    background:var(--bg-2);
+    border-bottom:1px solid var(--line);
+    position:relative;
+    z-index:30;
+  }
+  .logo{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:.2px}
+  .logo-mark{
+    width:24px;height:24px;border-radius:6px;
+    background:linear-gradient(135deg,var(--green) 0%,var(--cyan) 100%);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-weight:700;font-size:13px;color:#0a0d12;
+    box-shadow:0 0 14px rgba(63,185,80,.35);
+  }
+  .logo b{color:var(--ink)}
+  .logo span{color:var(--sub);font-weight:400;font-family:var(--mono);font-size:12px}
+  .topbar-nav{display:flex;gap:2px;margin-left:8px}
+  .topbar-nav a{
+    color:var(--sub);font-size:12.5px;padding:5px 10px;border-radius:6px;
+    text-decoration:none;transition:.15s;
+  }
+  .topbar-nav a:hover{color:var(--ink);background:var(--panel-2)}
+  .topbar-spacer{flex:1}
+  .topbar-stat{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;color:var(--sub)}
+  .topbar-stat .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .topbar-stat b{color:var(--ink);font-weight:500}
+  .avatar{
+    width:26px;height:26px;border-radius:50%;
+    background:linear-gradient(135deg,#6e40c9,#bc8cff);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:600;color:#fff;
+  }
+
+  /* ===== Layout ===== */
+  .app{
+    display:grid;
+    grid-template-columns:232px 1fr 340px;
+    height:calc(100vh - 44px);
+  }
+
+  /* ===== Left column ===== */
+  .left{
+    background:var(--bg-2);
+    border-right:1px solid var(--line);
+    display:flex;flex-direction:column;
+    overflow-y:auto;
+  }
+  .left::-webkit-scrollbar,.mid::-webkit-scrollbar,.right::-webkit-scrollbar{width:6px}
+  .left::-webkit-scrollbar-thumb,.mid::-webkit-scrollbar-thumb,.right::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:3px}
+
+  .nav-section{padding:14px 12px 6px}
+  .nav-label{
+    font-family:var(--mono);font-size:10px;letter-spacing:1.2px;
+    color:var(--faint);text-transform:uppercase;padding:0 8px 8px;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    padding:7px 10px;border-radius:7px;cursor:pointer;
+    color:var(--ink-2);font-size:13px;transition:.13s;
+    position:relative;
+  }
+  .nav-item:hover{background:var(--panel-2);color:var(--ink)}
+  .nav-item.active{background:rgba(63,185,80,.1);color:var(--ink)}
+  .nav-item.active::before{
+    content:'';position:absolute;left:0;top:8px;bottom:8px;width:2px;
+    background:var(--green);border-radius:2px;
+  }
+  .nav-ico{width:15px;height:15px;flex:none;opacity:.8}
+  .nav-item.active .nav-ico{opacity:1}
+  .nav-badge{
+    margin-left:auto;font-family:var(--mono);font-size:10px;
+    background:var(--panel-3);color:var(--sub);padding:1px 6px;border-radius:8px;
+  }
+  .nav-item.active .nav-badge{background:rgba(63,185,80,.18);color:var(--green)}
+
+  .asset-zone{padding:10px 12px;border-top:1px solid var(--line);margin-top:6px}
+  .drop{
+    border:1.5px dashed var(--line-2);border-radius:9px;
+    padding:14px 10px;text-align:center;cursor:pointer;
+    transition:.18s;margin-bottom:9px;
+  }
+  .drop:hover{border-color:var(--green);background:rgba(63,185,80,.04)}
+  .drop-ico{font-size:18px;margin-bottom:4px;color:var(--sub)}
+  .drop:hover .drop-ico{color:var(--green)}
+  .drop-t{font-size:12px;color:var(--ink-2);font-weight:500}
+  .drop-s{font-size:10.5px;color:var(--faint);margin-top:2px;font-family:var(--mono)}
+
+  .kb-status{
+    margin-top:auto;padding:12px;border-top:1px solid var(--line);
+    background:var(--bg);
+  }
+  .kb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .kb-head span{font-size:11px;color:var(--sub);font-family:var(--mono);letter-spacing:.5px}
+  .kb-head b{font-size:13px;color:var(--green);font-family:var(--mono)}
+  .kb-bar{height:4px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+  .kb-bar i{display:block;height:100%;width:78%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:3px}
+  .kb-meta{font-size:10.5px;color:var(--faint);margin-top:6px;font-family:var(--mono);display:flex;justify-content:space-between}
+
+  /* ===== Middle column ===== */
+  .mid{
+    display:flex;flex-direction:column;
+    background:var(--bg);
+    overflow:hidden;
+    position:relative;
+  }
+  .mid-head{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 18px;border-bottom:1px solid var(--line);
+    background:var(--bg-2);
+  }
+  .crumb{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px}
+  .crumb a{color:var(--sub);text-decoration:none;transition:.13s}
+  .crumb a:hover{color:var(--ink-2)}
+  .crumb .sep{color:var(--faint)}
+  .crumb .cur{color:var(--green)}
+  .mid-head-spacer{flex:1}
+  .mid-tab{
+    display:flex;gap:1px;background:var(--panel-2);padding:2px;border-radius:8px;
+  }
+  .mid-tab button{
+    background:transparent;border:0;color:var(--sub);font-size:12px;
+    padding:5px 12px;border-radius:6px;cursor:pointer;font-family:var(--sans);
+    transition:.13s;
+  }
+  .mid-tab button.on{background:var(--panel-3);color:var(--ink)}
+  .mid-tab button:hover:not(.on){color:var(--ink-2)}
+
+  /* canvas */
+  .canvas{
+    flex:1;position:relative;overflow:hidden;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 40%, rgba(63,185,80,.04), transparent 70%),
+      var(--bg);
+  }
+  .canvas::before{
+    content:'';position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+    background-size:32px 32px;
+    pointer-events:none;
+  }
+  .canvas svg{position:absolute;inset:0;width:100%;height:100%}
+
+  .canvas-toolbar{
+    position:absolute;top:14px;right:18px;display:flex;gap:6px;z-index:5;
+  }
+  .ct-btn{
+    width:30px;height:30px;border-radius:7px;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--sub);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+    transition:.13s;
+  }
+  .ct-btn:hover{color:var(--ink);border-color:var(--line-2);background:var(--panel-3)}
+
+  .legend-box{
+    position:absolute;bottom:14px;left:18px;z-index:5;
+    background:rgba(17,22,30,.85);backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:9px;padding:9px 12px;
+    display:flex;gap:14px;
+  }
+  .legend-box div{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);font-family:var(--mono)}
+  .legend-box .n{width:9px;height:9px;border-radius:50%}
+
+  /* node tooltip floating */
+  .node-tip{
+    position:absolute;z-index:8;
+    background:var(--panel-3);border:1px solid var(--line-2);border-radius:9px;
+    padding:9px 12px;font-size:11.5px;min-width:170px;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+    pointer-events:none;opacity:0;transition:.15s;
+  }
+  .node-tip.on{opacity:1}
+  .node-tip b{color:var(--ink);font-size:12.5px}
+  .node-tip .t-row{color:var(--sub);margin-top:3px;font-family:var(--mono);font-size:10.5px}
+
+  /* bottom action bar */
+  .action-bar{
+    display:flex;align-items:center;gap:10px;
+    padding:11px 18px;border-top:1px solid var(--line);
+    background:var(--bg-2);
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:500;
+    cursor:pointer;border:1px solid transparent;transition:.15s;font-family:var(--sans);
+  }
+  .btn-primary{background:var(--green-dim);color:#fff;border-color:rgba(63,185,80,.4)}
+  .btn-primary:hover{background:#2ea043;box-shadow:0 0 0 3px rgba(63,185,80,.15)}
+  .btn-ghost{background:var(--panel-2);color:var(--ink-2);border-color:var(--line)}
+  .btn-ghost:hover{background:var(--panel-3);color:var(--ink)}
+  .template-pick{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .template-pick label{font-size:11px;color:var(--sub);font-family:var(--mono)}
+  .tpl-chip{
+    font-size:11.5px;padding:4px 10px;border-radius:6px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--sub);transition:.13s;
+  }
+  .tpl-chip.on{background:rgba(188,140,255,.12);border-color:rgba(188,140,255,.4);color:var(--violet)}
+  .tpl-chip:hover:not(.on){color:var(--ink-2)}
+
+  /* pdf preview strip */
+  .preview-strip{
+    height:118px;border-top:1px solid var(--line);
+    background:var(--bg-2);display:flex;align-items:center;gap:14px;
+    padding:0 18px;overflow-x:auto;
+  }
+  .preview-strip::-webkit-scrollbar{height:5px}
+  .ps-label{font-size:10.5px;color:var(--faint);font-family:var(--mono);letter-spacing:1px;writing-mode:vertical-rl;rotate:180deg;flex:none}
+  .pdf-thumb{
+    flex:none;width:84px;height:104px;border-radius:6px;
+    background:#f5f3ee;position:relative;cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);transition:.15s;
+    border:1px solid var(--line);
+  }
+  .pdf-thumb:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.4)}
+  .pdf-thumb.sel{outline:2px solid var(--green);outline-offset:2px}
+  .pdf-thumb .pd-page{padding:8px 7px}
+  .pd-l{height:3px;background:#c8c4ba;border-radius:1px;margin-bottom:4px}
+  .pd-l.t{height:6px;background:#2a2a2a;margin-bottom:6px;width:60%}
+  .pd-l.s{width:80%}.pd-l.s2{width:90%}.pd-l.s3{width:70%}
+  .pdf-thumb .pd-tag{
+    position:absolute;bottom:4px;left:4px;right:4px;
+    font-family:var(--mono);font-size:8px;color:#fff;
+    background:rgba(0,0,0,.7);padding:2px 4px;border-radius:3px;text-align:center;
+  }
+
+  /* ===== Right column ===== */
+  .right{
+    background:var(--bg-2);
+    border-left:1px solid var(--line);
+    overflow-y:auto;
+    display:flex;flex-direction:column;
+  }
+  .right-section{padding:14px 16px;border-bottom:1px solid var(--line)}
+  .rs-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+  .rs-head .rs-num{
+    width:18px;height:18px;border-radius:5px;background:var(--amber-dim);
+    color:#0a0d12;font-family:var(--mono);font-size:11px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .rs-head h4{font-size:13px;font-weight:600;color:var(--ink)}
+  .rs-head .rs-tag{margin-left:auto;font-size:10px;font-family:var(--mono);color:var(--amber)}
+
+  .jd-drop{
+    border:1.5px dashed var(--line-2);border-radius:9px;
+    padding:18px 12px;text-align:center;cursor:pointer;transition:.18s;
+    background:rgba(227,179,65,.03);
+  }
+  .jd-drop:hover{border-color:var(--amber);background:rgba(227,179,65,.06)}
+  .jd-ico{font-size:20px;margin-bottom:5px;color:var(--amber)}
+  .jd-drop p{font-size:12px;color:var(--ink-2)}
+  .jd-drop small{font-size:10.5px;color:var(--faint);font-family:var(--mono)}
+
+  .jd-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    padding:12px;margin-top:11px;
+  }
+  .jd-co{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .jd-co .jd-logo{
+    width:24px;height:24px;border-radius:6px;
+    background:linear-gradient(135deg,#1e6fff,#39d0d8);
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600;
+  }
+  .jd-co b{font-size:12.5px;color:var(--ink)}
+  .jd-co span{font-size:11px;color:var(--sub);margin-left:auto;font-family:var(--mono)}
+  .jd-row{display:flex;gap:8px;margin-bottom:7px;align-items:flex-start}
+  .jd-k{font-size:10.5px;color:var(--faint);font-family:var(--mono);width:54px;flex:none;padding-top:1px}
+  .jd-v{font-size:11.5px;color:var(--ink-2);line-height:1.55}
+  .jd-pill{
+    display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;
+    background:var(--panel-3);color:var(--ink-2);margin:1px 3px 1px 0;
+    font-family:var(--mono);border:1px solid var(--line-2);
+  }
+
+  .gap-row{
+    display:flex;align-items:center;gap:9px;padding:8px 0;
+    border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;
+  }
+  .gap-row:last-child{border-bottom:0}
+  .gap-ic{width:16px;height:16px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+  .gap-ic.ok{background:rgba(63,185,80,.15);color:var(--green)}
+  .gap-ic.mid{background:rgba(227,179,65,.15);color:var(--amber)}
+  .gap-ic.no{background:rgba(248,81,73,.13);color:var(--rose)}
+  .gap-name{color:var(--ink-2);flex:1}
+  .gap-name b{color:var(--ink);font-weight:500}
+  .gap-meta{font-size:10px;color:var(--faint);font-family:var(--mono)}
+
+  .mentor{
+    background:linear-gradient(135deg,rgba(188,140,255,.08),rgba(57,208,216,.05));
+    border:1px solid rgba(188,140,255,.22);border-radius:10px;padding:13px;
+  }
+  .mentor-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .mentor-av{
+    width:22px;height:22px;border-radius:50%;
+    background:linear-gradient(135deg,var(--violet),var(--cyan));
+    display:flex;align-items:center;justify-content:center;font-size:11px;
+  }
+  .mentor-head b{font-size:12px;color:var(--ink)}
+  .mentor-head span{font-size:10px;color:var(--violet);margin-left:auto;font-family:var(--mono)}
+  .mentor p{font-size:11.5px;color:var(--ink-2);line-height:1.6;margin-bottom:8px}
+  .mentor .ref{
+    display:flex;align-items:center;gap:7px;font-size:11px;color:var(--cyan);
+    font-family:var(--mono);padding:7px 9px;background:rgba(0,0,0,.25);border-radius:7px;
+    cursor:pointer;transition:.13s;
+  }
+  .mentor .ref:hover{background:rgba(57,208,216,.1)}
+
+  /* scrollbar polish */
+  .right{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+
+  /* node pulse animation */
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  .pulse{animation:pulse 2.4s ease-in-out infinite}
+
+  /* entry stagger */
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .rise{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+</style>
+</head>
+<body>
+
+<!-- ===== Top bar ===== -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">R</div>
+    <b>Resume-Agent</b>
+    <span>v0.1.0-alpha</span>
+  </div>
+  <nav class="topbar-nav">
+    <a href="#">工作台</a>
+    <a href="#">知识库</a>
+    <a href="#">投递追踪</a>
+    <a href="#">文档</a>
+  </nav>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-stat"><span class="dot"></span>知识库在线 · <b>128</b> 切片已索引</div>
+  <div class="topbar-stat">本地模式 · <b>Chroma</b></div>
+  <div class="avatar">LH</div>
+</div>
+
+<!-- ===== App ===== -->
+<div class="app">
+
+  <!-- ===== Left ===== -->
+  <aside class="left">
+    <div class="nav-section">
+      <div class="nav-label">导航</div>
+      <div class="nav-item active">
+        <svg class="nav-ico" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>
+        总览面板
+      </div>
+      <div class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="8" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="4" cy="12" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 4.5L10 7M6 11.5L10 9" stroke="currentColor" stroke-width="1.4"/></svg>
+        简历版本分支
+        <span class="nav-badge">7</span>
+      </div>
+      <div class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 16 16" fill="none"><path d="M2 3.5C2 2.7 2.7 2 3.5 2H6l1.5 2H12.5C13.3 4 14 4.7 14 5.5V12.5C14 13.3 13.3 14 12.5 14H3.5C2.7 14 2 13.3 2 12.5V3.5Z" stroke="currentColor" stroke-width="1.4"/></svg>
+        个人知识库 (RAG)
+      </div>
+      <div class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 5.5V6.5M8 9.5V10.5M5.5 8H6.5M9.5 8H10.5" stroke="currentColor" stroke-width="1.2"/></svg>
+        职位截图分析
+      </div>
+      <div class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 16 16" fill="none"><path d="M2 13L8 3L14 13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5 13L8 8L11 13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        技能差距分析
+      </div>
+      <div class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8L10.2 9.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        投递时间线
+      </div>
+    </div>
+
+    <div class="asset-zone">
+      <div class="nav-label" style="padding:0 8px 8px">资产冷启动</div>
+      <div class="drop">
+        <div class="drop-ico">⤓</div>
+        <div class="drop-t">拖入旧简历</div>
+        <div class="drop-s">PDF / DOCX · 多文件</div>
+      </div>
+      <div class="drop">
+        <div class="drop-ico">⇪</div>
+        <div class="drop-t">注入知识素材</div>
+        <div class="drop-s">周报 · 论文 · CTF · 博客</div>
+      </div>
+    </div>
+
+    <div class="kb-status">
+      <div class="kb-head">
+        <span>KNOWLEDGE BASE</span>
+        <b>128</b>
+      </div>
+      <div class="kb-bar"><i></i></div>
+      <div class="kb-meta">
+        <span>已索引 78%</span>
+        <span>Chroma · local</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Middle ===== -->
+  <section class="mid">
+    <div class="mid-head">
+      <div class="crumb">
+        <a href="#">master</a>
+        <span class="sep">/</span>
+        <a href="#">安全岗</a>
+        <span class="sep">/</span>
+        <span class="cur">tencent-researcher</span>
+      </div>
+      <div class="mid-head-spacer"></div>
+      <div class="mid-tab">
+        <button class="on">版本树</button>
+        <button>编辑器</button>
+        <button>Diff 对比</button>
+      </div>
+    </div>
+
+    <!-- canvas -->
+    <div class="canvas" id="canvas">
+      <svg id="tree" viewBox="0 0 760 440" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="gMaster" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#3fb950"/><stop offset="1" stop-color="#238636"/>
+          </linearGradient>
+          <linearGradient id="gSec" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#e3b341"/><stop offset="1" stop-color="#9e6a03"/>
+          </linearGradient>
+          <linearGradient id="gAlgo" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#58a6ff"/><stop offset="1" stop-color="#1f6feb"/>
+          </linearGradient>
+          <linearGradient id="gCompany" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#bc8cff"/><stop offset="1" stop-color="#8957e5"/>
+          </linearGradient>
+          <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- branch lines (bezier) -->
+        <g fill="none" stroke-width="2.2" stroke-linecap="round">
+          <!-- master to sec -->
+          <path d="M 90 70 C 180 70, 180 150, 250 150" stroke="#3fb950" opacity=".7"/>
+          <!-- sec to tencent -->
+          <path d="M 290 150 C 400 150, 400 230, 500 230" stroke="#e3b341" opacity=".7"/>
+          <!-- sec to alibaba -->
+          <path d="M 290 150 C 400 150, 400 320, 500 320" stroke="#e3b341" opacity=".5" stroke-dasharray="2 4"/>
+          <!-- master to algo -->
+          <path d="M 90 70 C 180 70, 180 70, 250 70" stroke="#58a6ff" opacity=".7"/>
+          <!-- algo to bytedance -->
+          <path d="M 290 70 C 400 70, 400 110, 500 110" stroke="#58a6ff" opacity=".5" stroke-dasharray="2 4"/>
+        </g>
+
+        <!-- Master node -->
+        <g id="nMaster">
+          <circle cx="90" cy="70" r="16" fill="url(#gMaster)" filter="url(#glow)"/>
+          <circle cx="90" cy="70" r="16" fill="none" stroke="#3fb950" stroke-width="1.5" opacity=".5"/>
+          <text x="90" y="105" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#3fb950" font-weight="600">master</text>
+          <text x="90" y="120" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#7d8590">主库 · 基础信息</text>
+        </g>
+
+        <!-- Algorithm branch -->
+        <g id="nAlgo">
+          <circle cx="270" cy="70" r="12" fill="url(#gAlgo)"/>
+          <text x="270" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#58a6ff" font-weight="600">algorithm</text>
+        </g>
+
+        <!-- ByteDance company node -->
+        <g id="nByte" class="rise" style="animation-delay:.2s">
+          <rect x="490" y="96" width="150" height="34" rx="8" fill="#161c26" stroke="#2c3444" stroke-width="1"/>
+          <circle cx="504" cy="113" r="6" fill="url(#gAlgo)" opacity=".8"/>
+          <text x="516" y="110" font-family="IBM Plex Sans" font-size="11" fill="#c2cad6" font-weight="500">ByteDance</text>
+          <text x="516" y="123" font-family="IBM Plex Mono" font-size="9" fill="#7d8590">算法工程师</text>
+          <text x="624" y="117" text-anchor="end" font-family="IBM Plex Mono" font-size="9" fill="#565f6d">○</text>
+        </g>
+
+        <!-- Security branch -->
+        <g id="nSec">
+          <circle cx="270" cy="150" r="13" fill="url(#gSec)"/>
+          <text x="270" y="178" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#e3b341" font-weight="600">security</text>
+          <text x="270" y="192" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#7d8590">方向分支</text>
+        </g>
+
+        <!-- Tencent company node (SELECTED) -->
+        <g id="nTencent" class="rise" style="animation-delay:.1s">
+          <rect x="478" y="206" width="164" height="44" rx="10" fill="#1b2230" stroke="#bc8cff" stroke-width="1.6"/>
+          <rect x="478" y="206" width="164" height="44" rx="10" fill="none" stroke="#bc8cff" stroke-width="3" opacity=".25"/>
+          <circle cx="494" cy="228" r="7" fill="url(#gCompany)" filter="url(#glow)"/>
+          <text x="508" y="224" font-family="IBM Plex Sans" font-size="12" fill="#e6edf3" font-weight="600">Tencent</text>
+          <text x="508" y="238" font-family="IBM Plex Mono" font-size="9.5" fill="#bc8cff">安全研究员 · 1页</text>
+          <text x="630" y="222" text-anchor="end" font-family="IBM Plex Mono" font-size="9" fill="#3fb950">●</text>
+          <text x="630" y="244" text-anchor="end" font-family="IBM Plex Mono" font-size="8.5" fill="#7d8590">已生成</text>
+        </g>
+
+        <!-- Alibaba company node -->
+        <g id="nAli" class="rise" style="animation-delay:.3s">
+          <rect x="490" y="298" width="150" height="34" rx="8" fill="#161c26" stroke="#2c3444" stroke-width="1"/>
+          <circle cx="504" cy="315" r="6" fill="url(#gSec)" opacity=".8"/>
+          <text x="516" y="312" font-family="IBM Plex Sans" font-size="11" fill="#c2cad6" font-weight="500">Alibaba</text>
+          <text x="516" y="325" font-family="IBM Plex Mono" font-size="9" fill="#7d8590">安全工程师</text>
+          <text x="624" y="319" text-anchor="end" font-family="IBM Plex Mono" font-size="9" fill="#565f6d">○</text>
+        </g>
+
+        <!-- "new node" hint -->
+        <g id="nNew" opacity=".5">
+          <rect x="490" y="380" width="150" height="32" rx="8" fill="none" stroke="#2c3444" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <text x="565" y="400" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#565f6d">+ 新建公司节点</text>
+        </g>
+        <path d="M 290 150 C 400 150, 400 396, 488 396" fill="none" stroke="#2c3444" stroke-width="1.4" stroke-dasharray="3 4" opacity=".6"/>
+
+        <!-- inheritance arrow label -->
+        <g transform="translate(370,190)">
+          <rect x="-30" y="-9" width="60" height="18" rx="9" fill="#0d1117" stroke="#2c3444"/>
+          <text x="0" y="4" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#7d8590">↑ 继承</text>
+        </g>
+      </svg>
+
+      <div class="canvas-toolbar">
+        <button class="ct-btn" title="放大">+</button>
+        <button class="ct-btn" title="缩小">−</button>
+        <button class="ct-btn" title="自适应">⊡</button>
+      </div>
+
+      <div class="legend-box">
+        <div><span class="n" style="background:#3fb950"></span>主干</div>
+        <div><span class="n" style="background:#e3b341"></span>方向分支</div>
+        <div><span class="n" style="background:#bc8cff"></span>公司节点</div>
+        <div><span class="n" style="background:#58a6ff"></span>算法分支</div>
+      </div>
+
+      <div class="node-tip" id="tip" style="left:540px;top:260px">
+        <b>Tencent · 安全研究员</b>
+        <div class="t-row">继承自 security ← master</div>
+        <div class="t-row">最后生成：2 小时前</div>
+        <div class="t-row">PDF 1 页 · ATS 友好</div>
+      </div>
+    </div>
+
+    <!-- action bar -->
+    <div class="action-bar">
+      <button class="btn btn-primary">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L9.8 6L14.5 6.5L11 9.8L12 14.5L8 12L4 14.5L5 9.8L1.5 6.5L6.2 6L8 1.5Z" fill="currentColor"/></svg>
+        为该岗位动态生成
+      </button>
+      <button class="btn btn-ghost">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="5" height="10" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="3" width="5" height="10" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>
+        版本对比 Diff
+      </button>
+      <div class="template-pick">
+        <label>TEMPLATE</label>
+        <span class="tpl-chip">经典学术</span>
+        <span class="tpl-chip on">大厂技术</span>
+        <span class="tpl-chip">极简风</span>
+      </div>
+    </div>
+
+    <!-- pdf preview strip -->
+    <div class="preview-strip">
+      <div class="ps-label">PDF 预览</div>
+      <div class="pdf-thumb sel">
+        <div class="pd-page">
+          <div class="pd-l t"></div>
+          <div class="pd-l s2"></div>
+          <div class="pd-l s"></div>
+          <div class="pd-l s3"></div>
+          <div class="pd-l s2"></div>
+          <div class="pd-l s"></div>
+          <div class="pd-l s3"></div>
+        </div>
+        <div class="pd-tag">Tencent · 安全</div>
+      </div>
+      <div class="pdf-thumb">
+        <div class="pd-page">
+          <div class="pd-l t"></div>
+          <div class="pd-l s"></div>
+          <div class="pd-l s2"></div>
+          <div class="pd-l s3"></div>
+          <div class="pd-l s2"></div>
+          <div class="pd-l s"></div>
+        </div>
+        <div class="pd-tag">Alibaba · 安全</div>
+      </div>
+      <div class="pdf-thumb">
+        <div class="pd-page">
+          <div class="pd-l t"></div>
+          <div class="pd-l s2"></div>
+          <div class="pd-l s3"></div>
+          <div class="pd-l s"></div>
+          <div class="pd-l s2"></div>
+        </div>
+        <div class="pd-tag">ByteDance · 算法</div>
+      </div>
+      <div class="pdf-thumb">
+        <div class="pd-page">
+          <div class="pd-l t"></div>
+          <div class="pd-l s"></div>
+          <div class="pd-l s2"></div>
+          <div class="pd-l s3"></div>
+        </div>
+        <div class="pd-tag">Master · 基础</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Right ===== -->
+  <aside class="right">
+    <!-- JD upload -->
+    <div class="right-section">
+      <div class="rs-head">
+        <div class="rs-num">1</div>
+        <h4>职位截图分析</h4>
+        <span class="rs-tag">Vision LLM</span>
+      </div>
+      <div class="jd-drop">
+        <div class="jd-ico">▤</div>
+        <p>上传招聘截图</p>
+        <small>App · 海报 · 网页 · 拖入即解析</small>
+      </div>
+
+      <div class="jd-card">
+        <div class="jd-co">
+          <div class="jd-logo">腾</div>
+          <b>腾讯 · 安全研究员</b>
+          <span>2h ago</span>
+        </div>
+        <div class="jd-row">
+          <div class="jd-k">技术栈</div>
+          <div class="jd-v">
+            <span class="jd-pill">Go</span><span class="jd-pill">Kubernetes</span><span class="jd-pill">eBPF</span><span class="jd-pill">威胁情报</span>
+          </div>
+        </div>
+        <div class="jd-row">
+          <div class="jd-k">硬技能</div>
+          <div class="jd-v">漏洞挖掘 · 逆向分析 · 安全建模</div>
+        </div>
+        <div class="jd-row">
+          <div class="jd-k">软技能</div>
+          <div class="jd-v">跨团队协作 · 技术写作</div>
+        </div>
+        <div class="jd-row">
+          <div class="jd-k">加分项</div>
+          <div class="jd-v">开源贡献 · CTF 经验 · CVE 编号</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gap analysis -->
+    <div class="right-section">
+      <div class="rs-head">
+        <div class="rs-num">2</div>
+        <h4>知识盲区报告</h4>
+        <span class="rs-tag">RAG 比对</span>
+      </div>
+      <div class="gap-row">
+        <div class="gap-ic ok">✓</div>
+        <div class="gap-name"><b>漏洞挖掘</b> · 3 条经历命中</div>
+        <div class="gap-meta">强匹配</div>
+      </div>
+      <div class="gap-row">
+        <div class="gap-ic ok">✓</div>
+        <div class="gap-name"><b>Go / Kubernetes</b> · 知识库已覆盖</div>
+        <div class="gap-meta">强匹配</div>
+      </div>
+      <div class="gap-row">
+        <div class="gap-ic mid">△</div>
+        <div class="gap-name"><b>eBPF</b> · 仅提及实践，缺深度</div>
+        <div class="gap-meta">部分缺口</div>
+      </div>
+      <div class="gap-row">
+        <div class="gap-ic no">✗</div>
+        <div class="gap-name"><b>威胁情报平台</b> · 知识库未涉及</div>
+        <div class="gap-meta">未涉及</div>
+      </div>
+      <div class="gap-row">
+        <div class="gap-ic no">✗</div>
+        <div class="gap-name"><b>逆向分析</b> · 仅 CTF 报告有痕迹</div>
+        <div class="gap-meta">未涉及</div>
+      </div>
+    </div>
+
+    <!-- Mentor -->
+    <div class="right-section" style="border-bottom:0;flex:1">
+      <div class="rs-head">
+        <div class="rs-num" style="background:#8957e5">3</div>
+        <h4>AI 求职导师</h4>
+        <span class="rs-tag" style="color:var(--violet)">面试前补充</span>
+      </div>
+      <div class="mentor">
+        <div class="mentor-head">
+          <div class="mentor-av">✦</div>
+          <b>导师建议</b>
+          <span>Reflection</span>
+        </div>
+        <p>目标岗位要求 <b style="color:var(--ink)">eBPF</b> 与 <b style="color:var(--ink)">威胁情报</b>，你的知识库仅在 CTF 报告中提及 eBPF 基础。建议面试前重点掌握：</p>
+        <p>• eBPF 程序类型与 <b style="color:var(--ink)">hook 点</b> 机制<br>• 威胁情报的 <b style="color:var(--ink)">IOC</b> 生命周期与平台架构</p>
+        <div class="ref">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M9 2L3 9H7L6 14L12 7H8L9 2Z" fill="currentColor"/></svg>
+          参考开源：cilium/ebpf · MISP/misp
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // simple interactions: tooltip on tencent node, node hover highlight
+  const tip = document.getElementById('tip');
+  const tencent = document.getElementById('nTencent');
+  tencent.style.cursor='pointer';
+  tencent.addEventListener('mouseenter',()=>tip.classList.add('on'));
+  tencent.addEventListener('mouseleave',()=>tip.classList.remove('on'));
+
+  // template chips
+  document.querySelectorAll('.tpl-chip').forEach(c=>{
+    c.addEventListener('click',()=>{
+      document.querySelectorAll('.tpl-chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+    });
+  });
+
+  // tab switch
+  document.querySelectorAll('.mid-tab button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.mid-tab button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  // nav switch
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.addEventListener('click',()=>{
+      document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+      n.classList.add('active');
+    });
+  });
+
+  // pdf thumb select
+  document.querySelectorAll('.pdf-thumb').forEach(p=>{
+    p.addEventListener('click',()=>{
+      document.querySelectorAll('.pdf-thumb').forEach(x=>x.classList.remove('sel'));
+      p.classList.add('sel');
+    });
+  });
+</script>
+
+</body>
+</html>

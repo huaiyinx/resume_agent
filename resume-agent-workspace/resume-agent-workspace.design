@@ -1,0 +1,110 @@
+{
+  "data": [
+    {
+      "id": "page-workspace",
+      "title": "智能简历工作台",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751529600000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/workspace.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-overview",
+      "title": "总览面板",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751529601000,
+      "canvasData": {
+        "x": 620,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/overview.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-knowledge-base",
+      "title": "个人知识库",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751529602000,
+      "canvasData": {
+        "x": 1240,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/knowledge-base.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-job-analysis",
+      "title": "职位截图分析",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751529603000,
+      "canvasData": {
+        "x": 1860,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/job-analysis.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-skill-gap",
+      "title": "技能差距分析",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751529604000,
+      "canvasData": {
+        "x": 2480,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/skill-gap.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-timeline",
+      "title": "投递时间线",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751529605000,
+      "canvasData": {
+        "x": 3100,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/timeline.html",
+        "interactions": []
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "Resume-Agent 智能简历工作台",
+    "designLibrary": null,
+    "windowSize": {
+      "width": 800,
+      "height": 600
+    }
+  }
+}

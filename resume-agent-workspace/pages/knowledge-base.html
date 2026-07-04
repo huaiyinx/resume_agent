@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人知识库 - Resume-Agent</title>
+    <style id="theme-vars">
+:root {
+  /* === Brand Colors: Light Minimal Premium === */
+  --color-bg-primary: #fafbfc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: #f1f5f9;
+  --color-bg-active: #e2e8f0;
+  --color-bg-surface: #ffffff;
+  --color-bg-overlay: rgba(15, 23, 42, 0.6);
+
+  --color-border-default: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-border-strong: #cbd5e1;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #fafbfc;
+
+  --color-brand-primary: #2563eb;
+  --color-brand-primary-hover: #1d4ed8;
+  --color-brand-primary-muted: rgba(37, 99, 235, 0.08);
+  --color-brand-primary-glow: rgba(37, 99, 235, 0.12);
+
+  --color-brand-secondary: #7c3aed;
+  --color-brand-secondary-muted: rgba(124, 58, 237, 0.08);
+  --color-brand-secondary-glow: rgba(124, 58, 237, 0.12);
+
+  --color-accent-gradient-start: #2563eb;
+  --color-accent-gradient-end: #7c3aed;
+
+  /* Git tree node colors */
+  --color-node-master: #0891b2;
+  --color-node-branch: #7c3aed;
+  --color-node-company: #d97706;
+
+  /* State colors */
+  --state-success: #059669;
+  --state-success-muted: rgba(5, 150, 105, 0.08);
+  --state-warning: #d97706;
+  --state-warning-muted: rgba(217, 119, 6, 0.08);
+  --state-error: #dc2626;
+  --state-error-muted: rgba(220, 38, 38, 0.08);
+  --state-info: #2563eb;
+  --state-info-muted: rgba(37, 99, 235, 0.08);
+
+  /* === Typography === */
+  --font-display: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+
+  --text-xs: 0.6875rem;
+  --text-xs-leading: 1rem;
+  --text-sm: 0.75rem;
+  --text-sm-leading: 1.125rem;
+  --text-base: 0.8125rem;
+  --text-base-leading: 1.25rem;
+  --text-md: 0.875rem;
+  --text-md-leading: 1.375rem;
+  --text-lg: 1rem;
+  --text-lg-leading: 1.5rem;
+  --text-xl: 1.125rem;
+  --text-xl-leading: 1.625rem;
+  --text-2xl: 1.25rem;
+  --text-2xl-leading: 1.75rem;
+  --text-3xl: 1.5rem;
+  --text-3xl-leading: 2rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+  --tracking-mono: 0.04em;
+
+  /* === Spacing === */
+  --space-0: 0;
+  --space-0-5: 0.125rem;
+  --space-1: 0.25rem;
+  --space-1-5: 0.375rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* === Radius === */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* === Shadows === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-glow-primary: 0 0 20px rgba(37, 99, 235, 0.08);
+  --shadow-glow-secondary: 0 0 20px rgba(124, 58, 237, 0.08);
+  --shadow-glow-master: 0 0 20px rgba(8, 145, 178, 0.1);
+
+  /* === Transitions === */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* === Layout === */
+  --header-height: 48px;
+  --left-panel-width: 260px;
+  --right-panel-width: 380px;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+@theme inline {
+  --color-bg-primary: var(--color-bg-primary);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-bg-tertiary: var(--color-bg-tertiary);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-bg-hover: var(--color-bg-hover);
+  --color-bg-active: var(--color-bg-active);
+  --color-bg-surface: var(--color-bg-surface);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-tertiary: var(--color-text-tertiary);
+  --color-text-muted: var(--color-text-muted);
+  --color-brand-primary: var(--color-brand-primary);
+  --color-brand-secondary: var(--color-brand-secondary);
+  --color-border-default: var(--color-border-default);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-border-strong: var(--color-border-strong);
+  --color-node-master: var(--color-node-master);
+  --color-node-branch: var(--color-node-branch);
+  --color-node-company: var(--color-node-company);
+}
+
+  @layer base {
+    body { background: var(--color-bg-primary); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+  <!-- A) Global Top Toolbar -->
+  <div class="global-toolbar">
+    <div class="toolbar-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-brand-primary)">
+        <line x1="6" y1="3" x2="6" y2="15"></line>
+        <circle cx="18" cy="6" r="3"></circle>
+        <circle cx="6" cy="18" r="3"></circle>
+        <path d="M18 9a9 9 0 0 1-9 9"></path>
+      </svg>
+      Resume-Agent
+      <span class="version-badge">v0.3.1</span>
+    </div>
+    <div class="toolbar-nav">
+      <button class="toolbar-nav-tab">总览面板</button>
+      <button class="toolbar-nav-tab">简历版本分支</button>
+      <button class="toolbar-nav-tab active">知识库</button>
+      <button class="toolbar-nav-tab">设置</button>
+    </div>
+    <div class="toolbar-right">
+      <div class="status-dot"></div>
+      <span style="color: var(--color-text-secondary)">知识库在线</span>
+      <span class="chip">本地模式</span>
+      <div class="avatar">L</div>
+    </div>
+  </div>
+
+  <!-- B) Two-Column Layout -->
+  <div class="main-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="left-panel">
+      <div class="left-logo-area animate-fade-in">
+        <div class="logo-row">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-brand-primary)">
+            <line x1="6" y1="3" x2="6" y2="15"></line>
+            <circle cx="18" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <path d="M18 9a9 9 0 0 1-9 9"></path>
+          </svg>
+          <span>Resume-Agent</span>
+        </div>
+        <div class="subtitle">智能简历工作台</div>
+      </div>
+
+      <nav class="nav-list animate-fade-in-up">
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M5 1v14M1 5h14"/></svg>
+          <span>总览面板</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="8" r="2.5"/><circle cx="12" cy="4" r="2.5"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 7.2l3.5-2"/><path d="M6.5 8.8l3.5 2"/></svg>
+          <span>简历版本分支</span>
+          <span class="nav-badge">3</span>
+        </div>
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l1.5 3H14l-2.5 2 1 3.5L8 8.5 3.5 10.5l1-3.5L2 5h4.5z"/></svg>
+          <span>个人知识库 (RAG)</span>
+          <span class="nav-badge">86</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12"/><circle cx="11" cy="9" r="1.5"/></svg>
+          <span>职位截图分析</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h2l2-4 2 8 2-6 2 2h4"/></svg>
+          <span>技能差距分析</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+          <span>投递时间线</span>
+          <span class="nav-badge">5</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M13.4 10a1.65 1.65 0 0 0 .3 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.3 1.65 1.65 0 0 0-1 1.51V16a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 3 14.64a1.65 1.65 0 0 0-1.82.3l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 .6 10.3 1.65 1.65 0 0 0-.9 9.3V8.7a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.3-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 5 2.64V2a2 2 0 0 1 4 0v.64"/></svg>
+          <span>设置</span>
+        </div>
+      </nav>
+
+      <!-- Upload zones -->
+      <div class="upload-zones animate-fade-in-up animate-delay-1">
+        <div class="upload-zone">
+          <div class="upload-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto; color: var(--color-text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-title">拖入知识素材</div>
+          <div class="upload-hint">周报 / 论文 / CTF / 博客</div>
+        </div>
+      </div>
+
+      <!-- Knowledge base status -->
+      <div class="kb-status animate-fade-in-up animate-delay-2">
+        <div class="kb-status-label">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-brand-primary)"><path d="M8 2l1.5 3H14l-2.5 2 1 3.5L8 8.5 3.5 10.5l1-3.5L2 5h4.5z"/></svg>
+          知识库索引
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width: 84%"></div>
+        </div>
+        <div class="kb-status-detail">86 篇切片 · Chroma local</div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content-panel no-scrollbar">
+
+      <!-- Page Header -->
+      <div class="page-header animate-fade-in">
+        <div class="page-header-left">
+          <h1 class="page-title">个人知识库</h1>
+          <p class="page-subtitle">管理你的技术素材，为 AI 生成提供知识支撑</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            重新索引
+          </button>
+          <button class="btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            上传素材
+          </button>
+        </div>
+      </div>
+
+      <!-- Index Status Bar -->
+      <div class="index-status-bar animate-fade-in-up animate-delay-1">
+        <div class="status-text">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          已索引 <span class="mono">72/86</span> 篇 · Chroma local · 上次索引: 2小时前
+        </div>
+        <div class="progress-area">
+          <div class="index-progress-track">
+            <div class="index-progress-fill"></div>
+          </div>
+          <span class="index-progress-label">84%</span>
+        </div>
+      </div>
+
+      <!-- Drag-drop Upload Zone -->
+      <div class="drop-upload-zone animate-fade-in-up animate-delay-1" id="dropZone">
+        <div class="drop-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="drop-title">拖放文件到此处上传</div>
+        <div class="drop-hint">支持 PDF、Markdown、Word、纯文本格式</div>
+        <div class="drop-formats">
+          <span class="format-tag">.pdf</span>
+          <span class="format-tag">.md</span>
+          <span class="format-tag">.docx</span>
+          <span class="format-tag">.txt</span>
+        </div>
+      </div>
+
+      <!-- Filter / Search Bar -->
+      <div class="filter-bar animate-fade-in-up animate-delay-2">
+        <div class="search-row">
+          <div class="search-input">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="搜索文档标题或内容..." />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.4"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+          </div>
+          <div class="sort-dropdown">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M3 12h12"/><path d="M3 18h6"/></svg>
+            最近更新
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="filter-chips">
+          <button class="filter-chip active">全部</button>
+          <button class="filter-chip">周报</button>
+          <button class="filter-chip">论文</button>
+          <button class="filter-chip">CTF</button>
+          <button class="filter-chip">博客</button>
+          <button class="filter-chip">项目文档</button>
+        </div>
+      </div>
+
+      <!-- Document Grid -->
+      <div class="doc-grid animate-fade-in-up animate-delay-3">
+
+        <!-- Card 1: 周报 -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 4h18"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M9 14l2 2 4-4"/></svg>
+            </div>
+            <div class="doc-card-title">Q4 安全团队周报 - 第12周</div>
+          </div>
+          <div class="doc-card-excerpt">本周完成了内网横向移动检测模块的开发，基于 ETW 事件实现了对 PsExec 和 WMI 远程执行的实时监控。排查了3起疑似 APT 活动的误报，优化了检测规则...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge blue">周报</span>
+              <span class="doc-meta-text">2024-12-20<span class="separator">·</span>3,240 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot indexed"></div>
+              <span>已索引</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: 论文 -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon purple">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+            </div>
+            <div class="doc-card-title">KPT-2024 二进制漏洞挖掘</div>
+          </div>
+          <div class="doc-card-excerpt">提出了一种基于模糊测试与符号执行相结合的内核漏洞自动化挖掘方法。通过约束求解优化路径探索效率，在 Linux 5.15 内核中发现 4 个未公开漏洞...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge purple">论文</span>
+              <span class="doc-meta-text">2024-11-08<span class="separator">·</span>12,800 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot indexed"></div>
+              <span>已索引</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: CTF -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="doc-card-title">DEFCON 2024 CTF PWN Writeup</div>
+          </div>
+          <div class="doc-card-excerpt">详细记录了 DEFCON CTF Quals 中三道 PWN 题的解题过程，包括堆利用 UAF 漏洞的 House of Lore 技术、格式化字符串任意地址写以及内核模块 race condition...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge green">CTF</span>
+              <span class="doc-meta-text">2024-09-15<span class="separator">·</span>5,670 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot indexed"></div>
+              <span>已索引</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: 博客 -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon orange">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div class="doc-card-title">从零搭建企业级 WAF 规则引擎</div>
+          </div>
+          <div class="doc-card-excerpt">基于 Lua + OpenResty 实现高性能 WAF 规则引擎的设计与实现。涵盖规则热更新、正则匹配优化、语义分析检测 SQL 注入和 XSS 攻击的完整方案...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge orange">博客</span>
+              <span class="doc-meta-text">2024-10-22<span class="separator">·</span>8,120 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot indexed"></div>
+              <span>已索引</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: 项目文档 -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon cyan">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="doc-card-title">蜜罐系统 HoneyTrap 架构设计</div>
+          </div>
+          <div class="doc-card-excerpt">项目技术方案文档，描述了基于 Docker 的分布式高交互蜜罐架构设计。包含服务发现、流量镜像、攻击行为分析和告警联动四个核心模块的详细设计...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge cyan">项目文档</span>
+              <span class="doc-meta-text">2024-11-30<span class="separator">·</span>6,450 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot indexed"></div>
+              <span>已索引</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 6: 周报 -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 4h18"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M9 14l2 2 4-4"/></svg>
+            </div>
+            <div class="doc-card-title">Q4 安全团队周报 - 第8周</div>
+          </div>
+          <div class="doc-card-excerpt">完成了零信任网络架构 PoC 验证，基于 BeyondCorp 模型实现了身份感知代理。与基础设施团队完成了 SDP 网关与现有 VPN 的性能对比测试...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge blue">周报</span>
+              <span class="doc-meta-text">2024-11-22<span class="separator">·</span>2,890 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot indexed"></div>
+              <span>已索引</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 7: CTF -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="doc-card-title">HITCON 2024 Pwn 三道题解</div>
+          </div>
+          <div class="doc-card-excerpt">详解 HITCON CTF 2024 中 kernel exploitation 入门题、自定义解释器沙箱逃逸以及基于 eBPF 的容器逃逸挑战。包含完整的 exp 代码和调试笔记...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge green">CTF</span>
+              <span class="doc-meta-text">2024-08-30<span class="separator">·</span>7,230 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot pending"></div>
+              <span>待索引</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 8: 论文 -->
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-type-icon purple">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+            </div>
+            <div class="doc-card-title">LLM 辅助漏洞检测综述</div>
+          </div>
+          <div class="doc-card-excerpt">系统综述了大语言模型在软件漏洞检测领域的应用现状，涵盖代码生成式检测、补丁分析与自动化 PoC 生成三个方向。对比分析了 GPT-4、CodeLlama 等模型在 CVE 数据集上的表现...</div>
+          <div class="doc-card-footer">
+            <div class="doc-card-meta">
+              <span class="doc-type-badge purple">论文</span>
+              <span class="doc-meta-text">2024-12-01<span class="separator">·</span>15,600 字</span>
+            </div>
+            <div class="doc-status">
+              <div class="dot pending"></div>
+              <span>待索引</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination animate-fade-in-up">
+        <div class="pagination-info">显示 1-8 / 共 86 篇</div>
+        <div class="pagination-buttons">
+          <button class="page-btn disabled">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">4</button>
+          <button class="page-btn" style="font-size: var(--text-xs)">...</button>
+          <button class="page-btn">11</button>
+          <button class="page-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+
+      /* ====== Animations ====== */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes progressFill {
+        from { width: 0; }
+      }
+      .animate-fade-in { animation: fadeUp 0.4s ease both; }
+      .animate-fade-in-up { animation: fadeUp 0.5s ease both; }
+      .animate-delay-1 { animation-delay: 0.1s; }
+      .animate-delay-2 { animation-delay: 0.2s; }
+      .animate-delay-3 { animation-delay: 0.3s; }
+
+      /* ====== Global Toolbar ====== */
+      .global-toolbar {
+        height: var(--header-height);
+        background: var(--color-bg-secondary);
+        border-bottom: 1px solid var(--color-border-default);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-6);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(12px);
+      }
+      .toolbar-logo {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-family: var(--font-body);
+        font-weight: var(--font-weight-semibold);
+        font-size: var(--text-md);
+        color: var(--color-text-primary);
+        letter-spacing: var(--tracking-tight);
+      }
+      .toolbar-nav { display: flex; gap: var(--space-1); }
+      .toolbar-nav-tab {
+        padding: var(--space-1-5) var(--space-4);
+        border-radius: var(--radius-md);
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        border: none;
+        background: transparent;
+        font-family: var(--font-body);
+      }
+      .toolbar-nav-tab:hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+      .toolbar-nav-tab.active {
+        color: var(--color-brand-primary);
+        background: var(--color-brand-primary-muted);
+        font-weight: var(--font-weight-medium);
+      }
+      .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        font-size: var(--text-xs);
+      }
+      .status-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--state-success);
+        box-shadow: 0 0 6px var(--state-success);
+      }
+      .version-badge {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        background: var(--color-bg-tertiary);
+        padding: 1px var(--space-2);
+        border-radius: var(--radius-sm);
+        letter-spacing: var(--tracking-mono);
+      }
+      .chip {
+        font-size: var(--text-xs);
+        padding: 2px var(--space-3);
+        border-radius: var(--radius-full);
+        background: var(--color-bg-tertiary);
+        color: var(--color-text-tertiary);
+        border: 1px solid var(--color-border-subtle);
+        font-family: var(--font-body);
+      }
+      .avatar {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-xs);
+        font-weight: var(--font-weight-semibold);
+        color: white;
+      }
+
+      /* ====== Main Layout ====== */
+      .main-layout {
+        display: flex;
+        height: calc(100vh - var(--header-height));
+        overflow: hidden;
+      }
+
+      /* ====== Left Panel ====== */
+      .left-panel {
+        width: var(--left-panel-width);
+        min-width: var(--left-panel-width);
+        background: var(--color-bg-secondary);
+        border-right: 1px solid var(--color-border-default);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .left-logo-area {
+        padding: var(--space-5) var(--space-5) var(--space-4);
+        border-bottom: 1px solid var(--color-border-subtle);
+      }
+      .left-logo-area .logo-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-1);
+      }
+      .left-logo-area .logo-row span {
+        font-weight: var(--font-weight-bold);
+        font-size: var(--text-lg);
+        letter-spacing: var(--tracking-tight);
+      }
+      .left-logo-area .subtitle {
+        font-size: var(--text-xs);
+        color: var(--color-text-tertiary);
+        margin-left: var(--space-7);
+      }
+
+      /* Navigation */
+      .nav-list { padding: var(--space-3) var(--space-2); }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        margin-bottom: 2px;
+        border-left: 2px solid transparent;
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+      }
+      .nav-item:hover {
+        background: var(--color-bg-hover);
+        color: var(--color-text-primary);
+      }
+      .nav-item.active {
+        background: var(--color-brand-primary-muted);
+        color: var(--color-brand-primary);
+        border-left-color: var(--color-brand-primary);
+        font-weight: var(--font-weight-medium);
+      }
+      .nav-item .nav-icon {
+        width: 16px; height: 16px;
+        flex-shrink: 0;
+        opacity: 0.7;
+      }
+      .nav-item.active .nav-icon { opacity: 1; }
+      .nav-badge {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        background: var(--color-bg-elevated);
+        color: var(--color-text-tertiary);
+        padding: 1px var(--space-2);
+        border-radius: var(--radius-full);
+        min-width: 20px;
+        text-align: center;
+      }
+      .nav-item.active .nav-badge {
+        background: var(--color-brand-primary);
+        color: white;
+      }
+
+      /* Upload zones */
+      .upload-zones { padding: var(--space-4) var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+      .upload-zone {
+        border: 1.5px dashed var(--color-border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        text-align: center;
+        transition: all var(--transition-normal);
+        cursor: pointer;
+      }
+      .upload-zone:hover {
+        border-color: var(--color-brand-primary);
+        background: var(--color-brand-primary-muted);
+      }
+      .upload-zone .upload-icon { margin-bottom: var(--space-2); opacity: 0.5; }
+      .upload-zone .upload-title {
+        font-size: var(--text-xs);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-1);
+      }
+      .upload-zone .upload-hint {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+
+      /* Knowledge base status */
+      .kb-status {
+        margin-top: auto;
+        padding: var(--space-4);
+        border-top: 1px solid var(--color-border-subtle);
+      }
+      .kb-status-label {
+        font-size: var(--text-xs);
+        color: var(--color-text-tertiary);
+        margin-bottom: var(--space-2);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+      .progress-bar-track {
+        width: 100%;
+        height: 4px;
+        background: var(--color-bg-elevated);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        margin-bottom: var(--space-2);
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary));
+        border-radius: var(--radius-full);
+        animation: progressFill 1.2s ease both;
+      }
+      .kb-status-detail {
+        font-size: var(--text-xs);
+        font-family: var(--font-mono);
+        color: var(--color-text-muted);
+        letter-spacing: var(--tracking-mono);
+      }
+
+      /* ====== Content Panel ====== */
+      .content-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        background: var(--color-bg-primary);
+        padding: var(--space-8) var(--space-10);
+      }
+
+      /* Page Header */
+      .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: var(--space-6);
+      }
+      .page-header-left {}
+      .page-title {
+        font-family: var(--font-display);
+        font-size: var(--text-2xl);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        letter-spacing: var(--tracking-tight);
+        margin-bottom: var(--space-1);
+      }
+      .page-subtitle {
+        font-size: var(--text-sm);
+        color: var(--color-text-tertiary);
+        line-height: var(--text-sm-leading);
+      }
+      .page-header-actions {
+        display: flex;
+        gap: var(--space-3);
+        flex-shrink: 0;
+      }
+
+      /* Buttons */
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-5);
+        background: var(--color-brand-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-lg);
+        font-size: var(--text-sm);
+        font-weight: var(--font-weight-medium);
+        font-family: var(--font-body);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        box-shadow: var(--shadow-sm);
+      }
+      .btn-primary:hover {
+        background: var(--color-brand-primary-hover);
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+      .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-5);
+        background: var(--color-bg-secondary);
+        color: var(--color-text-secondary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        font-size: var(--text-sm);
+        font-weight: var(--font-weight-medium);
+        font-family: var(--font-body);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .btn-secondary:hover {
+        border-color: var(--color-border-strong);
+        color: var(--color-text-primary);
+        background: var(--color-bg-hover);
+      }
+
+      /* Index Status Bar */
+      .index-status-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-3) var(--space-5);
+        background: var(--color-brand-primary-muted);
+        border: 1px solid rgba(37, 99, 235, 0.12);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--space-6);
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+      }
+      .index-status-bar .status-text {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+      .index-status-bar .status-text .mono {
+        font-family: var(--font-mono);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-brand-primary);
+      }
+      .index-status-bar .progress-area {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
+      .index-progress-track {
+        width: 160px;
+        height: 6px;
+        background: var(--color-bg-secondary);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        border: 1px solid rgba(37, 99, 235, 0.1);
+      }
+      .index-progress-fill {
+        height: 100%;
+        width: 84%;
+        background: linear-gradient(90deg, var(--color-brand-primary), var(--color-accent-gradient-end));
+        border-radius: var(--radius-full);
+        animation: progressFill 1s ease both;
+      }
+      .index-progress-label {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-tertiary);
+        min-width: 32px;
+        text-align: right;
+      }
+
+      /* Filter / Search Bar */
+      .filter-bar {
+        margin-bottom: var(--space-6);
+      }
+      .search-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-3);
+      }
+      .search-input {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-fast);
+      }
+      .search-input:focus-within {
+        border-color: var(--color-brand-primary);
+        box-shadow: 0 0 0 3px var(--color-brand-primary-muted);
+      }
+      .search-input svg {
+        color: var(--color-text-muted);
+        flex-shrink: 0;
+      }
+      .search-input input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: var(--text-sm);
+        font-family: var(--font-body);
+        color: var(--color-text-primary);
+      }
+      .search-input input::placeholder {
+        color: var(--color-text-muted);
+      }
+      .sort-dropdown {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .sort-dropdown:hover {
+        border-color: var(--color-border-strong);
+      }
+      .filter-chips {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+      }
+      .filter-chip {
+        padding: var(--space-1) var(--space-4);
+        border-radius: var(--radius-full);
+        font-size: var(--text-xs);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-tertiary);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-default);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-family: var(--font-body);
+      }
+      .filter-chip:hover {
+        border-color: var(--color-border-strong);
+        color: var(--color-text-secondary);
+      }
+      .filter-chip.active {
+        background: var(--color-brand-primary);
+        color: white;
+        border-color: var(--color-brand-primary);
+      }
+
+      /* Document Grid */
+      .doc-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-5);
+        margin-bottom: var(--space-8);
+      }
+
+      /* Document Card */
+      .doc-card {
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+      .doc-card:hover {
+        border-color: var(--color-border-strong);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+      }
+      .doc-card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+      }
+      .doc-type-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .doc-type-icon.blue {
+        background: rgba(37, 99, 235, 0.08);
+        color: #2563eb;
+      }
+      .doc-type-icon.purple {
+        background: rgba(124, 58, 237, 0.08);
+        color: #7c3aed;
+      }
+      .doc-type-icon.green {
+        background: rgba(5, 150, 105, 0.08);
+        color: #059669;
+      }
+      .doc-type-icon.orange {
+        background: rgba(217, 119, 6, 0.08);
+        color: #d97706;
+      }
+      .doc-type-icon.cyan {
+        background: rgba(8, 145, 178, 0.08);
+        color: #0891b2;
+      }
+      .doc-card-title {
+        font-size: var(--text-md);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        line-height: var(--text-md-leading);
+        letter-spacing: var(--tracking-tight);
+      }
+      .doc-card-excerpt {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        line-height: var(--text-sm-leading);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .doc-card-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+      }
+      .doc-type-badge {
+        font-size: var(--text-xs);
+        font-weight: var(--font-weight-medium);
+        padding: 2px var(--space-2);
+        border-radius: var(--radius-sm);
+      }
+      .doc-type-badge.blue { background: rgba(37, 99, 235, 0.08); color: #2563eb; }
+      .doc-type-badge.purple { background: rgba(124, 58, 237, 0.08); color: #7c3aed; }
+      .doc-type-badge.green { background: rgba(5, 150, 105, 0.08); color: #059669; }
+      .doc-type-badge.orange { background: rgba(217, 119, 6, 0.08); color: #d97706; }
+      .doc-type-badge.cyan { background: rgba(8, 145, 178, 0.08); color: #0891b2; }
+      .doc-meta-text {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        font-family: var(--font-mono);
+      }
+      .doc-meta-text .separator {
+        margin: 0 var(--space-2);
+        color: var(--color-border-default);
+      }
+      .doc-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--color-border-subtle);
+      }
+      .doc-status {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1-5);
+        font-size: var(--text-xs);
+        font-weight: var(--font-weight-medium);
+      }
+      .doc-status .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+      .doc-status .dot.indexed {
+        background: var(--state-success);
+        box-shadow: 0 0 6px var(--state-success);
+      }
+      .doc-status .dot.pending {
+        background: var(--state-warning);
+        box-shadow: 0 0 6px var(--state-warning);
+      }
+      .doc-status .dot.indexed + span { color: var(--state-success); }
+      .doc-status .dot.pending + span { color: var(--state-warning); }
+      .doc-card-actions {
+        display: flex;
+        gap: var(--space-1);
+      }
+      .doc-card-actions button {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        border: none;
+        background: transparent;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .doc-card-actions button:hover {
+        background: var(--color-bg-hover);
+        color: var(--color-text-secondary);
+      }
+
+      /* Pagination */
+      .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-4) 0;
+      }
+      .pagination-info {
+        font-size: var(--text-sm);
+        color: var(--color-text-tertiary);
+        font-family: var(--font-mono);
+      }
+      .pagination-buttons {
+        display: flex;
+        gap: var(--space-1);
+      }
+      .page-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border-default);
+        background: var(--color-bg-secondary);
+        font-size: var(--text-sm);
+        font-family: var(--font-mono);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .page-btn:hover {
+        border-color: var(--color-border-strong);
+        background: var(--color-bg-hover);
+      }
+      .page-btn.active {
+        background: var(--color-brand-primary);
+        color: white;
+        border-color: var(--color-brand-primary);
+        font-weight: var(--font-weight-semibold);
+      }
+      .page-btn.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* Drag-drop upload zone */
+      .drop-upload-zone {
+        border: 2px dashed var(--color-border-default);
+        border-radius: var(--radius-xl);
+        padding: var(--space-8) var(--space-6);
+        text-align: center;
+        margin-bottom: var(--space-6);
+        transition: all var(--transition-normal);
+        background: transparent;
+      }
+      .drop-upload-zone:hover,
+      .drop-upload-zone.drag-over {
+        border-color: var(--color-brand-primary);
+        background: var(--color-brand-primary-muted);
+      }
+      .drop-upload-zone .drop-icon {
+        margin-bottom: var(--space-3);
+        color: var(--color-text-muted);
+      }
+      .drop-upload-zone:hover .drop-icon,
+      .drop-upload-zone.drag-over .drop-icon {
+        color: var(--color-brand-primary);
+      }
+      .drop-upload-zone .drop-title {
+        font-size: var(--text-md);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-1);
+      }
+      .drop-upload-zone .drop-hint {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+      .drop-upload-zone .drop-formats {
+        margin-top: var(--space-3);
+        display: flex;
+        justify-content: center;
+        gap: var(--space-2);
+      }
+      .drop-upload-zone .format-tag {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        padding: 2px var(--space-2);
+        border-radius: var(--radius-sm);
+        background: var(--color-bg-tertiary);
+        color: var(--color-text-muted);
+        border: 1px solid var(--color-border-subtle);
+      }
+
+      /* ====== Responsive ====== */
+      @media (max-width: 1024px) {
+        .doc-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .content-panel {
+          padding: var(--space-6);
+        }
+      }
+      @media (max-width: 768px) {
+        .left-panel {
+          display: none;
+        }
+        .doc-grid {
+          grid-template-columns: 1fr;
+        }
+        .page-header {
+          flex-direction: column;
+          gap: var(--space-4);
+        }
+        .page-header-actions {
+          width: 100%;
+        }
+        .page-header-actions .btn-primary,
+        .page-header-actions .btn-secondary {
+          flex: 1;
+          justify-content: center;
+        }
+        .index-status-bar {
+          flex-direction: column;
+          gap: var(--space-3);
+          align-items: flex-start;
+        }
+        .index-status-bar .progress-area {
+          width: 100%;
+        }
+        .index-progress-track {
+          flex: 1;
+        }
+        .search-row {
+          flex-direction: column;
+        }
+        .search-input,
+        .sort-dropdown {
+          width: 100%;
+        }
+        .content-panel {
+          padding: var(--space-4);
+        }
+        .global-toolbar {
+          padding: 0 var(--space-4);
+        }
+      }
+      @media (max-width: 480px) {
+        .content-panel {
+          padding: var(--space-3);
+        }
+        .doc-card {
+          padding: var(--space-4);
+        }
+        .doc-card-header {
+          flex-direction: column;
+          gap: var(--space-2);
+        }
+        .doc-type-icon {
+          width: 28px;
+          height: 28px;
+        }
+        .page-title {
+          font-size: var(--text-xl);
+        }
+        .pagination {
+          flex-direction: column;
+          gap: var(--space-3);
+          align-items: center;
+        }
+        .filter-chips {
+          gap: var(--space-1-5);
+        }
+        .filter-chip {
+          padding: var(--space-1) var(--space-3);
+        }
+      }
+    </style>
+</body>
+</html>

@@ -1,0 +1,65 @@
+{
+  "project": {
+    "name": "Resume-Agent 智能简历工作台",
+    "operation": "create",
+    "designRead": "Developer tool dashboard / technical job seekers / deep blue tech SaaS / high density / avoid neon glow",
+    "designDials": {
+      "layoutVariance": 2,
+      "motionIntensity": 2,
+      "visualDensity": 5
+    },
+    "generationTree": {
+      "root": {
+        "nodeId": "gen-project-shell",
+        "kind": "project-shell",
+        "pageIds": ["page-workspace"],
+        "output": null,
+        "sharedRegions": ["global-header", "three-column-layout", "brand-css-variables", "color-tokens"],
+        "privateRegions": [],
+        "mutableSlots": ["pageTitle"],
+        "status": "planned",
+        "children": [
+          {
+            "nodeId": "gen-page-workspace",
+            "kind": "page-leaf",
+            "pageIds": ["page-workspace"],
+            "output": "pages/workspace.html",
+            "sharedRegions": [],
+            "privateRegions": ["left-panel", "center-panel", "right-panel"],
+            "mutableSlots": [],
+            "status": "planned",
+            "children": []
+          }
+        ]
+      }
+    }
+  },
+  "designSource": {
+    "operatingMode": "free-explore",
+    "brandCssPath": "colors_and_type.css",
+    "styleConstraints": {
+      "radiusMax": 12,
+      "staticShadowAlphaMax": 0.05
+    },
+    "libraryIdentity": null
+  },
+  "pages": [
+    {
+      "nodeId": "page-workspace",
+      "title": "Resume-Agent 智能简历工作台",
+      "htmlSrc": "pages/workspace.html",
+      "pageIndex": 1,
+      "pageType": "information-dense",
+      "visualNorthStar": "Three-column developer workspace with interactive Git version tree canvas",
+      "compositionPattern": "dashboard-layout",
+      "imagePlan": [],
+      "continuityAnchors": {
+        "typographySystem": "Inter + JetBrains Mono",
+        "colorSystem": "Deep navy blue (#0a0e1a) with blue-purple gradient accents"
+      }
+    }
+  ],
+  "assets": [],
+  "wiringPlan": [],
+  "hiddenInteractionPlan": []
+}

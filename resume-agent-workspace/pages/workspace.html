@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume-Agent 智能简历工作台</title>
+    <style id="theme-vars">
+:root {
+  /* === Brand Colors: Light Minimal Premium === */
+  --color-bg-primary: #fafbfc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: #f1f5f9;
+  --color-bg-active: #e2e8f0;
+  --color-bg-surface: #ffffff;
+  --color-bg-overlay: rgba(15, 23, 42, 0.6);
+
+  --color-border-default: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-border-strong: #cbd5e1;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #fafbfc;
+
+  --color-brand-primary: #2563eb;
+  --color-brand-primary-hover: #1d4ed8;
+  --color-brand-primary-muted: rgba(37, 99, 235, 0.08);
+  --color-brand-primary-glow: rgba(37, 99, 235, 0.12);
+
+  --color-brand-secondary: #7c3aed;
+  --color-brand-secondary-muted: rgba(124, 58, 237, 0.08);
+  --color-brand-secondary-glow: rgba(124, 58, 237, 0.12);
+
+  --color-accent-gradient-start: #2563eb;
+  --color-accent-gradient-end: #7c3aed;
+
+  /* Git tree node colors */
+  --color-node-master: #0891b2;
+  --color-node-branch: #7c3aed;
+  --color-node-company: #d97706;
+
+  /* State colors */
+  --state-success: #059669;
+  --state-success-muted: rgba(5, 150, 105, 0.08);
+  --state-warning: #d97706;
+  --state-warning-muted: rgba(217, 119, 6, 0.08);
+  --state-error: #dc2626;
+  --state-error-muted: rgba(220, 38, 38, 0.08);
+  --state-info: #2563eb;
+  --state-info-muted: rgba(37, 99, 235, 0.08);
+
+  /* === Typography === */
+  --font-display: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+
+  --text-xs: 0.6875rem;
+  --text-xs-leading: 1rem;
+  --text-sm: 0.75rem;
+  --text-sm-leading: 1.125rem;
+  --text-base: 0.8125rem;
+  --text-base-leading: 1.25rem;
+  --text-md: 0.875rem;
+  --text-md-leading: 1.375rem;
+  --text-lg: 1rem;
+  --text-lg-leading: 1.5rem;
+  --text-xl: 1.125rem;
+  --text-xl-leading: 1.625rem;
+  --text-2xl: 1.25rem;
+  --text-2xl-leading: 1.75rem;
+  --text-3xl: 1.5rem;
+  --text-3xl-leading: 2rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+  --tracking-mono: 0.04em;
+
+  /* === Spacing === */
+  --space-0: 0;
+  --space-0-5: 0.125rem;
+  --space-1: 0.25rem;
+  --space-1-5: 0.375rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* === Radius === */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* === Shadows === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-glow-primary: 0 0 20px rgba(37, 99, 235, 0.08);
+  --shadow-glow-secondary: 0 0 20px rgba(124, 58, 237, 0.08);
+  --shadow-glow-master: 0 0 20px rgba(8, 145, 178, 0.1);
+
+  /* === Transitions === */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* === Layout === */
+  --header-height: 48px;
+  --left-panel-width: 260px;
+  --right-panel-width: 380px;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-bg-primary: var(--color-bg-primary);
+    --color-bg-secondary: var(--color-bg-secondary);
+    --color-bg-tertiary: var(--color-bg-tertiary);
+    --color-bg-elevated: var(--color-bg-elevated);
+    --color-bg-hover: var(--color-bg-hover);
+    --color-bg-active: var(--color-bg-active);
+    --color-bg-surface: var(--color-bg-surface);
+    --color-text-primary: var(--color-text-primary);
+    --color-text-secondary: var(--color-text-secondary);
+    --color-text-tertiary: var(--color-text-tertiary);
+    --color-text-muted: var(--color-text-muted);
+    --color-brand-primary: var(--color-brand-primary);
+    --color-brand-secondary: var(--color-brand-secondary);
+    --color-border-default: var(--color-border-default);
+    --color-border-subtle: var(--color-border-subtle);
+    --color-border-strong: var(--color-border-strong);
+    --color-node-master: var(--color-node-master);
+    --color-node-branch: var(--color-node-branch);
+    --color-node-company: var(--color-node-company);
+  }
+
+  @layer base {
+    body { background: var(--color-bg-primary); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+  <!-- A) Global Top Toolbar -->
+  <div class="global-toolbar">
+    <div class="toolbar-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-brand-primary)">
+        <line x1="6" y1="3" x2="6" y2="15"></line>
+        <circle cx="18" cy="6" r="3"></circle>
+        <circle cx="6" cy="18" r="3"></circle>
+        <path d="M18 9a9 9 0 0 1-9 9"></path>
+      </svg>
+      Resume-Agent
+      <span class="version-badge">v0.3.1</span>
+    </div>
+    <div class="toolbar-nav">
+      <button class="toolbar-nav-tab active">总览面板</button>
+      <button class="toolbar-nav-tab">简历版本分支</button>
+      <button class="toolbar-nav-tab">知识库</button>
+      <button class="toolbar-nav-tab">设置</button>
+    </div>
+    <div class="toolbar-right">
+      <div class="status-dot"></div>
+      <span style="color: var(--color-text-secondary)">知识库在线</span>
+      <span class="chip">本地模式</span>
+      <div class="avatar">L</div>
+    </div>
+  </div>
+
+  <!-- B) Three-Column Layout -->
+  <div class="main-layout">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-panel">
+      <!-- Logo area -->
+      <div class="left-logo-area animate-fade-in">
+        <div class="logo-row">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-brand-primary)">
+            <line x1="6" y1="3" x2="6" y2="15"></line>
+            <circle cx="18" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <path d="M18 9a9 9 0 0 1-9 9"></path>
+          </svg>
+          <span>Resume-Agent</span>
+        </div>
+        <div class="subtitle">智能简历工作台</div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="nav-list animate-fade-in-up">
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M5 1v14M1 5h14"/></svg>
+          <span>总览面板</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="8" r="2.5"/><circle cx="12" cy="4" r="2.5"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 7.2l3.5-2"/><path d="M6.5 8.8l3.5 2"/></svg>
+          <span>简历版本分支</span>
+          <span class="nav-badge">3</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l1.5 3H14l-2.5 2 1 3.5L8 8.5 3.5 10.5l1-3.5L2 5h4.5z"/></svg>
+          <span>个人知识库 (RAG)</span>
+          <span class="nav-badge">12</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12"/><circle cx="11" cy="9" r="1.5"/></svg>
+          <span>职位截图分析</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h2l2-4 2 8 2-6 2 2h4"/></svg>
+          <span>技能差距分析</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+          <span>投递时间线</span>
+          <span class="nav-badge">5</span>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M13.4 10a1.65 1.65 0 0 0 .3 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.3 1.65 1.65 0 0 0-1 1.51V16a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 3 14.64a1.65 1.65 0 0 0-1.82.3l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 .6 10.3 1.65 1.65 0 0 0-.9 9.3V8.7a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.3-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 5 2.64V2a2 2 0 0 1 4 0v.64"/></svg>
+          <span>设置</span>
+        </div>
+      </nav>
+
+      <!-- Upload zones -->
+      <div class="upload-zones animate-fade-in-up animate-delay-1">
+        <div class="upload-zone">
+          <div class="upload-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto; color: var(--color-text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-title">拖入旧简历 (PDF/Word)</div>
+          <div class="upload-hint">自动解析并创建初始版本</div>
+        </div>
+        <div class="upload-zone">
+          <div class="upload-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto; color: var(--color-text-muted)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </div>
+          <div class="upload-title">注入知识素材 (周报/论文/CTF/博客)</div>
+          <div class="upload-hint">丰富个人知识库以优化简历</div>
+        </div>
+      </div>
+
+      <!-- Knowledge base status -->
+      <div class="kb-status animate-fade-in-up animate-delay-2">
+        <div class="kb-status-label">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-brand-primary)"><path d="M8 2l1.5 3H14l-2.5 2 1 3.5L8 8.5 3.5 10.5l1-3.5L2 5h4.5z"/></svg>
+          知识库索引
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width: 72%"></div>
+        </div>
+        <div class="kb-status-detail">86 篇切片 · Chroma local</div>
+      </div>
+    </div>
+
+    <!-- CENTER COLUMN -->
+    <div class="center-panel">
+      <!-- Breadcrumb + Tab pills -->
+      <div class="breadcrumb-bar animate-fade-in">
+        <span class="breadcrumb-segment">master</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-segment">安全岗</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-segment">tencent-researcher</span>
+        <div class="tab-pills">
+          <button class="tab-pill active">版本树</button>
+          <button class="tab-pill">编辑器</button>
+          <button class="tab-pill">Diff 对比</button>
+        </div>
+      </div>
+
+      <!-- SVG Git Tree Canvas -->
+      <div class="canvas-area animate-fade-in-up">
+        <svg viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Glow filters -->
+            <filter id="glowMaster" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feFlood flood-color="#22d3ee" flood-opacity="0.18" result="color"/>
+              <feComposite in="color" in2="blur" operator="in" result="glow"/>
+              <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glowBranch" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feFlood flood-color="#a78bfa" flood-opacity="0.15" result="color"/>
+              <feComposite in="color" in2="blur" operator="in" result="glow"/>
+              <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glowCompany" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feFlood flood-color="#f59e0b" flood-opacity="0.15" result="color"/>
+              <feComposite in="color" in2="blur" operator="in" result="glow"/>
+              <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glowTencent" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feFlood flood-color="#f59e0b" flood-opacity="0.25" result="color"/>
+              <feComposite in="color" in2="blur" operator="in" result="glow"/>
+              <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <!-- Grid pattern -->
+            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e2e8f0" stroke-width="0.3" opacity="0.5"/>
+            </pattern>
+          </defs>
+
+          <!-- Background grid -->
+          <rect width="900" height="400" fill="url(#grid)" opacity="0.5"/>
+
+          <!-- Connection paths (curved bezier) -->
+          <!-- Master -> 安全岗 -->
+          <path d="M 120 200 Q 220 200 310 130" fill="none" stroke="#a78bfa" stroke-width="1.8" opacity="0.5" stroke-dasharray="none"/>
+          <!-- Master -> 算法岗 -->
+          <path d="M 120 200 Q 220 200 310 310" fill="none" stroke="#a78bfa" stroke-width="1.8" opacity="0.5"/>
+          <!-- 安全岗 -> Tencent -->
+          <path d="M 410 130 Q 490 130 570 90" fill="none" stroke="#f59e0b" stroke-width="1.8" opacity="0.5"/>
+          <!-- 安全岗 -> ByteDance安全 -->
+          <path d="M 410 130 Q 490 130 570 190" fill="none" stroke="#f59e0b" stroke-width="1.8" opacity="0.5"/>
+          <!-- 算法岗 -> ByteDance算法 -->
+          <path d="M 410 310 Q 490 310 570 310" fill="none" stroke="#f59e0b" stroke-width="1.8" opacity="0.5"/>
+          <!-- 算法岗 -> 新建 -->
+          <path d="M 410 310 Q 490 350 570 380" fill="none" stroke="#cbd5e1" stroke-width="1.2" opacity="0.5" stroke-dasharray="5 4"/>
+
+          <!-- "继承" label on master->安全岗 -->
+          <text x="195" y="155" fill="#94a3b8" font-size="10" font-family="Inter, sans-serif" opacity="0.8">继承</text>
+
+          <!-- Master node (circle, cyan) -->
+          <circle cx="80" cy="200" r="30" fill="#ffffff" stroke="#22d3ee" stroke-width="2" filter="url(#glowMaster)"/>
+          <circle cx="80" cy="200" r="22" fill="rgba(34,211,238,0.06)"/>
+          <text x="80" y="196" text-anchor="middle" fill="#0891b2" font-size="11" font-family="Inter, sans-serif" font-weight="600">master</text>
+          <text x="80" y="212" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="JetBrains Mono, monospace">main</text>
+
+          <!-- 安全岗 branch node (rounded rect, purple) -->
+          <rect x="310" y="105" width="100" height="50" rx="8" fill="#ffffff" stroke="#a78bfa" stroke-width="1.8" filter="url(#glowBranch)"/>
+          <text x="360" y="134" text-anchor="middle" fill="#7c3aed" font-size="12" font-family="Inter, sans-serif" font-weight="600">安全岗</text>
+
+          <!-- 算法岗 branch node (rounded rect, purple) -->
+          <rect x="310" y="285" width="100" height="50" rx="8" fill="#ffffff" stroke="#a78bfa" stroke-width="1.8" filter="url(#glowBranch)"/>
+          <text x="360" y="314" text-anchor="middle" fill="#7c3aed" font-size="12" font-family="Inter, sans-serif" font-weight="600">算法岗</text>
+
+          <!-- Tencent-研究员 (selected with animated glow) -->
+          <rect x="570" y="60" width="140" height="55" rx="8" fill="#ffffff" stroke="#f59e0b" stroke-width="2.5" filter="url(#glowTencent)">
+            <animate attributeName="stroke-opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite"/>
+          </rect>
+          <text x="640" y="82" text-anchor="middle" fill="#d97706" font-size="11" font-family="Inter, sans-serif" font-weight="600">Tencent</text>
+          <text x="640" y="100" text-anchor="middle" fill="#0f172a" font-size="10" font-family="Inter, sans-serif">研究员</text>
+
+          <!-- ByteDance-安全 (company node, amber) -->
+          <rect x="570" y="165" width="140" height="55" rx="8" fill="#ffffff" stroke="#f59e0b" stroke-width="1.8" filter="url(#glowCompany)" style="cursor:pointer"/>
+          <text x="640" y="187" text-anchor="middle" fill="#d97706" font-size="11" font-family="Inter, sans-serif" font-weight="600">ByteDance</text>
+          <text x="640" y="205" text-anchor="middle" fill="#0f172a" font-size="10" font-family="Inter, sans-serif">安全工程师</text>
+
+          <!-- ByteDance-算法 (company node, amber) -->
+          <rect x="570" y="283" width="140" height="55" rx="8" fill="#ffffff" stroke="#f59e0b" stroke-width="1.8" filter="url(#glowCompany)" style="cursor:pointer"/>
+          <text x="640" y="305" text-anchor="middle" fill="#d97706" font-size="11" font-family="Inter, sans-serif" font-weight="600">ByteDance</text>
+          <text x="640" y="323" text-anchor="middle" fill="#0f172a" font-size="10" font-family="Inter, sans-serif">算法工程师</text>
+
+          <!-- + 新建公司节点 (dashed placeholder) -->
+          <rect x="570" y="356" width="140" height="38" rx="8" fill="transparent" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 4" style="cursor:pointer"/>
+          <text x="640" y="380" text-anchor="middle" fill="#cbd5e1" font-size="10" font-family="Inter, sans-serif">+ 新建公司节点</text>
+
+          <!-- Decorative version labels -->
+          <g opacity="0.5">
+            <text x="230" y="96" fill="#64748b" font-size="8" font-family="JetBrains Mono, monospace">v1.0</text>
+            <text x="230" y="324" fill="#64748b" font-size="8" font-family="JetBrains Mono, monospace">v1.1</text>
+            <text x="500" y="82" fill="#64748b" font-size="8" font-family="JetBrains Mono, monospace">v1.0.1</text>
+            <text x="500" y="190" fill="#64748b" font-size="8" font-family="JetBrains Mono, monospace">v1.0.2</text>
+            <text x="500" y="310" fill="#64748b" font-size="8" font-family="JetBrains Mono, monospace">v1.1.1</text>
+          </g>
+        </svg>
+
+        <!-- Zoom controls -->
+        <div class="zoom-controls">
+          <button class="zoom-btn" title="放大">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+          </button>
+          <button class="zoom-btn" title="缩小">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="8" x2="13" y2="8"/></svg>
+          </button>
+          <button class="zoom-btn" title="适配屏幕">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="2" y1="8" x2="6" y2="8"/><line x1="10" y1="8" x2="14" y2="8"/></svg>
+          </button>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-box">
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--color-node-master); box-shadow: 0 0 6px var(--color-node-master)"></div>
+            <span>主干节点</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--color-node-branch); box-shadow: 0 0 6px var(--color-node-branch)"></div>
+            <span>方向分支</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: var(--color-node-company); box-shadow: 0 0 6px var(--color-node-company)"></div>
+            <span>公司节点</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canvas toolbar -->
+      <div class="canvas-toolbar animate-fade-in-up animate-delay-1">
+        <button class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z"/></svg>
+          为该岗位动态生成
+        </button>
+        <button class="btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+          版本对比 Diff
+        </button>
+        <div class="template-chips">
+          <button class="template-chip">经典学术</button>
+          <button class="template-chip active">大厂技术</button>
+          <button class="template-chip">极简风</button>
+        </div>
+      </div>
+
+      <!-- PDF preview thumbnails -->
+      <div class="pdf-strip animate-fade-in-up animate-delay-2">
+        <div class="pdf-thumb active">
+          <div class="pdf-thumb-inner" style="border-color: var(--color-brand-primary); background: linear-gradient(135deg, #f1f5f9, #e2e8f0);">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.6"><rect x="2" y="1" width="12" height="14" rx="1.5"/><path d="M5 4h6M5 7h6M5 10h4"/></svg>
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="#3b82f6" opacity="0.4"><circle cx="4" cy="4" r="4"/></svg>
+          </div>
+          <div class="pdf-thumb-label" style="color: var(--color-brand-primary)">Tencent</div>
+        </div>
+        <div class="pdf-thumb">
+          <div class="pdf-thumb-inner" style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0);">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.5"><rect x="2" y="1" width="12" height="14" rx="1.5"/><path d="M5 4h6M5 7h6M5 10h4"/></svg>
+          </div>
+          <div class="pdf-thumb-label">ByteDance-安全</div>
+        </div>
+        <div class="pdf-thumb">
+          <div class="pdf-thumb-inner" style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0);">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.5"><rect x="2" y="1" width="12" height="14" rx="1.5"/><path d="M5 4h6M5 7h6M5 10h4"/></svg>
+          </div>
+          <div class="pdf-thumb-label">ByteDance-算法</div>
+        </div>
+        <div class="pdf-thumb">
+          <div class="pdf-thumb-inner" style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0);">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.5"><rect x="2" y="1" width="12" height="14" rx="1.5"/><path d="M5 4h6M5 7h6M5 10h4"/></svg>
+          </div>
+          <div class="pdf-thumb-label">通用模板</div>
+        </div>
+        <div class="pdf-thumb">
+          <div class="pdf-thumb-inner" style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0);">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.5"><rect x="2" y="1" width="12" height="14" rx="1.5"/><path d="M5 4h6M5 7h6M5 10h4"/></svg>
+          </div>
+          <div class="pdf-thumb-label">学术论文版</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-panel">
+
+      <!-- Section 1: 职位截图分析 -->
+      <div class="right-section animate-fade-in">
+        <div class="section-header">
+          <svg class="section-header-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-node-company)">
+            <rect x="2" y="3" width="12" height="10" rx="1.5"/>
+            <path d="M2 6h12"/>
+            <circle cx="11" cy="9" r="1.5"/>
+          </svg>
+          职位截图分析
+        </div>
+
+        <div class="jd-upload-zone">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-text-muted); margin-bottom: 4px">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <span>拖入职位截图 (PNG/JPG)</span>
+        </div>
+
+        <div class="jd-card">
+          <div class="jd-header">Tencent <span>/ 安全研究员</span></div>
+          <div class="jd-tags">
+            <span class="jd-tag">C++</span>
+            <span class="jd-tag">Python</span>
+            <span class="jd-tag">漏洞挖掘</span>
+            <span class="jd-tag">x86汇编</span>
+            <span class="jd-tag">逆向工程</span>
+          </div>
+
+          <div class="jd-section-title">硬技能</div>
+          <div class="jd-list-item">
+            <svg class="check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>
+            精通 C/C++ 底层开发，熟悉内存安全机制
+          </div>
+          <div class="jd-list-item">
+            <svg class="check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>
+            具备独立漏洞挖掘与分析能力
+          </div>
+          <div class="jd-list-item">
+            <svg class="check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>
+            熟悉 x86/ARM 汇编与逆向工程工具链
+          </div>
+
+          <div class="jd-section-title">软技能</div>
+          <div class="jd-list-item">
+            <svg class="check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>
+            跨团队协作与安全事件应急响应
+          </div>
+          <div class="jd-list-item">
+            <svg class="check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l4 4 6-7"/></svg>
+            技术文档撰写与安全报告输出
+          </div>
+
+          <div class="jd-section-title">加分项</div>
+          <div class="jd-list-item">
+            <svg class="star" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z"/></svg>
+            CTF 竞赛获奖经历
+          </div>
+          <div class="jd-list-item">
+            <svg class="star" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z"/></svg>
+            有 CVE 编号或安全会议演讲经验
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: 知识盲区报告 -->
+      <div class="right-section animate-fade-in animate-delay-1">
+        <div class="section-header">
+          <svg class="section-header-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--state-warning)">
+            <path d="M8 1.5a6.5 6.5 0 0 0-6.5 6.5c0 2.5 1.5 4.5 3 5.8.5.4.8 1 .8 1.7v.5h5v-.5c0-.7.3-1.3.8-1.7 1.5-1.3 3-3.3 3-5.8A6.5 6.5 0 0 0 8 1.5z"/>
+            <line x1="5.5" y1="16" x2="10.5" y2="16"/>
+            <path d="M8 5v4M8 11.5v.5"/>
+          </svg>
+          知识盲区报告
+        </div>
+
+        <div class="gap-item">
+          <div>
+            <div class="gap-name">C++ 底层</div>
+            <div class="gap-desc">精通内存管理、模板编程</div>
+          </div>
+          <span class="gap-badge covered">已覆盖</span>
+        </div>
+        <div class="gap-item">
+          <div>
+            <div class="gap-name">漏洞挖掘</div>
+            <div class="gap-desc"> fuzzing 工具使用, 0day 发现流程</div>
+          </div>
+          <span class="gap-badge partial">部分缺口</span>
+        </div>
+        <div class="gap-item">
+          <div>
+            <div class="gap-name">x86 汇编</div>
+            <div class="gap-desc">指令集熟练阅读与调试</div>
+          </div>
+          <span class="gap-badge covered">已覆盖</span>
+        </div>
+        <div class="gap-item">
+          <div>
+            <div class="gap-name">逆向工程</div>
+            <div class="gap-desc">IDA Pro, Ghidra 等工具链</div>
+          </div>
+          <span class="gap-badge partial">部分缺口</span>
+        </div>
+        <div class="gap-item">
+          <div>
+            <div class="gap-name">Python 安全</div>
+            <div class="gap-desc">安全自动化脚本开发</div>
+          </div>
+          <span class="gap-badge covered">已覆盖</span>
+        </div>
+        <div class="gap-item">
+          <div>
+            <div class="gap-name">ARM 汇编</div>
+            <div class="gap-desc">移动端漏洞分析</div>
+          </div>
+          <span class="gap-badge missing">未涉及</span>
+        </div>
+      </div>
+
+      <!-- Section 3: AI 求职导师 -->
+      <div class="right-section animate-fade-in animate-delay-2">
+        <div class="section-header">
+          <svg class="section-header-icon ai-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 10V5a4 4 0 1 0-8 0v5"/>
+            <rect x="1" y="10" width="14" height="4" rx="1.5"/>
+            <circle cx="5" cy="12" r="1" fill="currentColor"/>
+            <circle cx="11" cy="12" r="1" fill="currentColor"/>
+          </svg>
+          AI 求职导师
+        </div>
+
+        <div class="ai-card">
+          <div class="ai-summary">
+            针对该岗位分析，你的核心技术栈匹配度约 <strong style="color: var(--color-brand-primary)">72%</strong>。主要差距集中在漏洞挖掘实战经验和 ARM 汇编方向。建议优先补充这两个领域的项目经历。
+          </div>
+
+          <div class="ai-heading">面试前补充建议</div>
+          <div class="ai-bullet">
+            <div class="bullet-dot"></div>
+            <span>完成 2-3 个真实漏洞复现实验 (CVE 复现), 整理 writeup 放入知识库</span>
+          </div>
+          <div class="ai-bullet">
+            <div class="bullet-dot"></div>
+            <span>学习 ARM 基础指令集, 完成 one CTF ARM PWN 题</span>
+          </div>
+          <div class="ai-bullet">
+            <div class="bullet-dot"></div>
+            <span>准备 1-2 个安全工具开发项目案例, 体现工程能力</span>
+          </div>
+
+          <div class="ai-links">
+            <a class="ai-link" href="#">OWASP Top 10 实战项目</a>
+            <a class="ai-link" href="#">CTFtime PWN 入门</a>
+            <a class="ai-link" href="#">AFL++ Fuzzing 教程</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+    <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--text-base-leading);
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--color-border-default); border-radius: var(--radius-full); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { filter: url(#glowTencent); opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    @keyframes progressFill {
+      from { width: 0; }
+      to { width: 72%; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .animate-fade-in { animation: fadeIn 0.5s ease both; }
+    .animate-fade-in-up { animation: fadeInUp 0.4s ease both; }
+    .animate-delay-1 { animation-delay: 0.1s; }
+    .animate-delay-2 { animation-delay: 0.2s; }
+    .animate-delay-3 { animation-delay: 0.3s; }
+
+    /* Global toolbar */
+    .global-toolbar {
+      height: var(--header-height);
+      background: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-default);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-6);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .toolbar-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-body);
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--text-md);
+      color: var(--color-text-primary);
+      letter-spacing: var(--tracking-tight);
+    }
+    .toolbar-nav { display: flex; gap: var(--space-1); }
+    .toolbar-nav-tab {
+      padding: var(--space-1-5) var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+    }
+    .toolbar-nav-tab:hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+    .toolbar-nav-tab.active {
+      color: var(--color-brand-primary);
+      background: var(--color-brand-primary-muted);
+      font-weight: var(--font-weight-medium);
+    }
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-xs);
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--state-success);
+      box-shadow: 0 0 6px var(--state-success);
+    }
+    .version-badge {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      background: var(--color-bg-tertiary);
+      padding: 1px var(--space-2);
+      border-radius: var(--radius-sm);
+      letter-spacing: var(--tracking-mono);
+    }
+    .chip {
+      font-size: var(--text-xs);
+      padding: 2px var(--space-3);
+      border-radius: var(--radius-full);
+      background: var(--color-bg-tertiary);
+      color: var(--color-text-tertiary);
+      border: 1px solid var(--color-border-subtle);
+      font-family: var(--font-body);
+    }
+    .avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      font-weight: var(--font-weight-semibold);
+      color: white;
+    }
+
+    /* Three-column layout */
+    .main-layout {
+      display: flex;
+      height: calc(100vh - var(--header-height));
+      overflow: hidden;
+    }
+
+    /* Left Panel */
+    .left-panel {
+      width: var(--left-panel-width);
+      min-width: var(--left-panel-width);
+      background: var(--color-bg-secondary);
+      border-right: 1px solid var(--color-border-default);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .left-logo-area {
+      padding: var(--space-5) var(--space-5) var(--space-4);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .left-logo-area .logo-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-1);
+    }
+    .left-logo-area .logo-row span {
+      font-weight: var(--font-weight-bold);
+      font-size: var(--text-lg);
+      letter-spacing: var(--tracking-tight);
+    }
+    .left-logo-area .subtitle {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      margin-left: var(--space-7);
+    }
+
+    /* Navigation */
+    .nav-list { padding: var(--space-3) var(--space-2); }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      margin-bottom: 2px;
+      border-left: 2px solid transparent;
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+    }
+    .nav-item:hover {
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+    .nav-item.active {
+      background: var(--color-brand-primary-muted);
+      color: var(--color-brand-primary);
+      border-left-color: var(--color-brand-primary);
+      font-weight: var(--font-weight-medium);
+    }
+    .nav-item .nav-icon {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    .nav-item.active .nav-icon { opacity: 1; }
+    .nav-badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      background: var(--color-bg-elevated);
+      color: var(--color-text-tertiary);
+      padding: 1px var(--space-2);
+      border-radius: var(--radius-full);
+      min-width: 20px;
+      text-align: center;
+    }
+    .nav-item.active .nav-badge {
+      background: var(--color-brand-primary);
+      color: white;
+    }
+
+    /* Upload zones */
+    .upload-zones { padding: var(--space-4) var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+    .upload-zone {
+      border: 1.5px dashed var(--color-border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+    .upload-zone:hover {
+      border-color: var(--color-brand-primary);
+      background: var(--color-brand-primary-muted);
+    }
+    .upload-zone .upload-icon { margin-bottom: var(--space-2); opacity: 0.5; }
+    .upload-zone .upload-title {
+      font-size: var(--text-xs);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-1);
+    }
+    .upload-zone .upload-hint {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* Knowledge base status */
+    .kb-status {
+      margin-top: auto;
+      padding: var(--space-4);
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .kb-status-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .progress-bar-track {
+      width: 100%;
+      height: 4px;
+      background: var(--color-bg-elevated);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: var(--space-2);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary));
+      border-radius: var(--radius-full);
+      animation: progressFill 1.2s ease both;
+    }
+    .kb-status-detail {
+      font-size: var(--text-xs);
+      font-family: var(--font-mono);
+      color: var(--color-text-muted);
+      letter-spacing: var(--tracking-mono);
+    }
+
+    /* Center Panel */
+    .center-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--color-bg-primary);
+    }
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      padding: var(--space-3) var(--space-5);
+      gap: var(--space-2);
+      border-bottom: 1px solid var(--color-border-subtle);
+      font-size: var(--text-sm);
+    }
+    .breadcrumb-segment {
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: color var(--transition-fast);
+    }
+    .breadcrumb-segment:hover { color: var(--color-brand-primary); }
+    .breadcrumb-segment:last-child { color: var(--color-text-primary); font-weight: var(--font-weight-medium); }
+    .breadcrumb-sep { color: var(--color-text-muted); font-size: var(--text-xs); }
+    .tab-pills {
+      margin-left: auto;
+      display: flex;
+      gap: 2px;
+      background: var(--color-bg-tertiary);
+      border-radius: var(--radius-md);
+      padding: 2px;
+    }
+    .tab-pill {
+      padding: var(--space-1) var(--space-4);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+    }
+    .tab-pill:hover { color: var(--color-text-secondary); }
+    .tab-pill.active {
+      background: var(--color-bg-elevated);
+      color: var(--color-text-primary);
+      font-weight: var(--font-weight-medium);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* SVG Canvas area */
+    .canvas-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .canvas-area svg { width: 100%; height: 100%; }
+    .zoom-controls {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      padding: 2px;
+    }
+    .zoom-btn {
+      width: 28px; height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: none;
+      background: transparent;
+      color: var(--color-text-tertiary);
+    }
+    .zoom-btn:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+
+    /* Legend */
+    .legend-box {
+      position: absolute;
+      bottom: var(--space-3);
+      left: var(--space-4);
+      display: flex;
+      gap: var(--space-5);
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-4);
+    }
+    .legend-item { display: flex; align-items: center; gap: var(--space-1-5); }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Toolbar strip below canvas */
+    .canvas-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      border-top: 1px solid var(--color-border-subtle);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-5);
+      background: linear-gradient(135deg, var(--color-accent-gradient-start), var(--color-accent-gradient-end));
+      color: white;
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-medium);
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+      box-shadow: var(--shadow-glow-primary);
+    }
+    .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-5);
+      background: transparent;
+      color: var(--color-text-secondary);
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-medium);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-body);
+    }
+    .btn-secondary:hover { border-color: var(--color-border-strong); color: var(--color-text-primary); background: var(--color-bg-hover); }
+    .template-chips {
+      margin-left: auto;
+      display: flex;
+      gap: 2px;
+      background: var(--color-bg-tertiary);
+      border-radius: var(--radius-md);
+      padding: 2px;
+    }
+    .template-chip {
+      padding: var(--space-1) var(--space-4);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+    }
+    .template-chip:hover { color: var(--color-text-secondary); }
+    .template-chip.active {
+      background: var(--color-brand-primary);
+      color: white;
+      font-weight: var(--font-weight-medium);
+    }
+
+    /* PDF Thumbnails */
+    .pdf-strip {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .pdf-thumb {
+      flex-shrink: 0;
+      width: 88px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      padding: 2px;
+    }
+    .pdf-thumb:hover { border-color: var(--color-border-strong); }
+    .pdf-thumb.active { border-color: var(--color-brand-primary); }
+    .pdf-thumb-inner {
+      width: 100%;
+      aspect-ratio: 210/297;
+      background: var(--color-bg-surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2);
+    }
+    .pdf-thumb-label {
+      font-size: 9px;
+      color: var(--color-text-muted);
+      text-align: center;
+      margin-top: var(--space-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    /* Right Panel */
+    .right-panel {
+      width: var(--right-panel-width);
+      min-width: var(--right-panel-width);
+      background: var(--color-bg-secondary);
+      border-left: 1px solid var(--color-border-default);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .right-section {
+      border-bottom: 1px solid var(--color-border-subtle);
+      padding: var(--space-4) var(--space-4);
+    }
+    .right-section:last-child { border-bottom: none; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+    }
+    .section-header-icon { width: 16px; height: 16px; opacity: 0.7; }
+
+    /* JD card */
+    .jd-upload-zone {
+      border: 1.5px dashed var(--color-border-default);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      text-align: center;
+      margin-bottom: var(--space-3);
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+    .jd-upload-zone:hover {
+      border-color: var(--color-brand-primary);
+      background: var(--color-brand-primary-muted);
+    }
+    .jd-upload-zone span {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+    .jd-card {
+      background: var(--color-bg-tertiary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      border: 1px solid var(--color-border-subtle);
+    }
+    .jd-header {
+      font-size: var(--text-md);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-3);
+      color: var(--color-text-primary);
+    }
+    .jd-header span { color: var(--color-text-tertiary); font-weight: var(--font-weight-normal); }
+    .jd-tags { display: flex; flex-wrap: wrap; gap: var(--space-1-5); margin-bottom: var(--space-4); }
+    .jd-tag {
+      font-size: var(--text-xs);
+      padding: 2px var(--space-2-5);
+      background: var(--color-bg-elevated);
+      color: var(--color-text-secondary);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border-subtle);
+      font-family: var(--font-mono);
+      letter-spacing: var(--tracking-mono);
+    }
+    .jd-section-title {
+      font-size: var(--text-xs);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      margin-bottom: var(--space-2);
+      margin-top: var(--space-3);
+    }
+    .jd-list-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-1-5);
+      line-height: var(--text-sm-leading);
+    }
+    .jd-list-item .check { color: var(--state-success); flex-shrink: 0; margin-top: 1px; }
+    .jd-list-item .star { color: var(--state-warning); flex-shrink: 0; margin-top: 1px; }
+
+    /* Knowledge gap report */
+    .gap-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .gap-item:last-child { border-bottom: none; }
+    .gap-name {
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-primary);
+      min-width: 90px;
+    }
+    .gap-badge {
+      font-size: 10px;
+      padding: 1px var(--space-2);
+      border-radius: var(--radius-full);
+      font-weight: var(--font-weight-medium);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .gap-badge.covered { background: var(--state-success-muted); color: var(--state-success); }
+    .gap-badge.partial { background: var(--state-warning-muted); color: var(--state-warning); }
+    .gap-badge.missing { background: var(--state-error-muted); color: var(--state-error); }
+    .gap-desc {
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+      line-height: var(--text-xs-leading);
+    }
+
+    /* AI mentor section */
+    .ai-card {
+      background: var(--color-bg-tertiary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      border: 1px solid var(--color-border-subtle);
+    }
+    .ai-icon { color: var(--color-brand-primary); }
+    .ai-summary {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      line-height: var(--text-base-leading);
+      margin-bottom: var(--space-3);
+    }
+    .ai-heading {
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-2);
+    }
+    .ai-bullet {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-1-5);
+      line-height: var(--text-sm-leading);
+    }
+    .ai-bullet .bullet-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--color-brand-primary);
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .ai-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1-5);
+      margin-top: var(--space-3);
+    }
+    .ai-link {
+      font-size: var(--text-xs);
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-bg-elevated);
+      color: var(--color-brand-primary);
+      border: 1px solid var(--color-brand-primary-muted);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    .ai-link:hover { background: var(--color-brand-primary-muted); }
+
+    /* ===== Responsive: Tablet (max-width: 1024px) ===== */
+    @media (max-width: 1024px) {
+      /* Global toolbar */
+      .toolbar-nav { display: none; }
+      .toolbar-right span:not(.version-badge) { display: none; }
+      .toolbar-right .chip { display: none; }
+      .toolbar-right { gap: var(--space-2); }
+
+      /* Left panel — collapsed icon rail */
+      .left-panel { width: 60px; min-width: 60px; }
+      .left-logo-area .logo-row span,
+      .left-logo-area .subtitle { display: none; }
+      .left-logo-area { padding: var(--space-3) var(--space-2); display: flex; justify-content: center; }
+      .left-logo-area .logo-row { margin-bottom: 0; }
+
+      .nav-list { padding: var(--space-2) var(--space-1); }
+      .nav-item {
+        justify-content: center;
+        padding: var(--space-2);
+        position: relative;
+        border-left: none;
+      }
+      .nav-item.active { border-left-color: transparent; }
+      .nav-item span:not(.nav-badge) { display: none; }
+      .nav-item .nav-icon { opacity: 1; }
+      .nav-item .nav-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 14px;
+        height: 14px;
+        font-size: 8px;
+        padding: 0;
+        line-height: 14px;
+      }
+
+      /* Hide upload zones and kb-status */
+      .upload-zones { display: none; }
+      .kb-status { display: none; }
+
+      /* Right panel — narrower */
+      .right-panel { width: 300px; min-width: 300px; }
+    }
+
+    /* ===== Responsive: Mobile (max-width: 768px) ===== */
+    @media (max-width: 768px) {
+      /* Global toolbar */
+      .toolbar-right span:not(.version-badge) { display: none; }
+      .toolbar-right .chip { display: none; }
+      .toolbar-right .status-dot { display: none; }
+      .toolbar-logo .version-badge { display: none; }
+
+      /* Three-column → vertical stack */
+      .main-layout {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+      }
+
+      /* Left panel — horizontal scrolling nav strip */
+      .left-panel {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border-default);
+        overflow: visible;
+      }
+      .left-logo-area { display: none; }
+      .upload-zones { display: none; }
+      .kb-status { display: none; }
+
+      .nav-list {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 4px;
+        padding: 8px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        padding: 6px 12px;
+        border-radius: var(--radius-md);
+        border-left: none;
+        flex-shrink: 0;
+        position: static;
+      }
+      .nav-item.active { border-left-color: transparent; }
+      .nav-item span:not(.nav-badge) { display: inline; }
+      .nav-item .nav-icon { opacity: 0.7; }
+      .nav-item.active .nav-icon { opacity: 1; }
+      .nav-item .nav-badge {
+        position: relative;
+        top: auto;
+        right: auto;
+        display: inline;
+        margin-left: 4px;
+        font-size: 9px;
+        min-width: auto;
+        height: auto;
+        line-height: 1.2;
+      }
+
+      /* Center panel */
+      .center-panel {
+        flex: 1;
+        min-height: 400px;
+      }
+      .breadcrumb-bar {
+        flex-wrap: wrap;
+        gap: var(--space-1);
+      }
+
+      /* Toolbar strip — allow wrapping */
+      .canvas-toolbar {
+        flex-wrap: wrap;
+      }
+
+      /* Right panel — full width */
+      .right-panel {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+        border-left: none;
+        border-top: 1px solid var(--color-border-default);
+      }
+
+      /* PDF thumbnails — slightly smaller */
+      .pdf-thumb { width: 72px; }
+    }
+
+    /* ===== Responsive: Small mobile (max-width: 480px) ===== */
+    @media (max-width: 480px) {
+      /* Hide toolbar-right completely */
+      .toolbar-right { display: none; }
+
+      /* Smaller nav items */
+      .nav-item { padding: 4px 8px; font-size: 12px; }
+
+      /* Even smaller PDF thumbnails */
+      .pdf-thumb { width: 60px; }
+    }
+  </style>
+</body>
+</html>
