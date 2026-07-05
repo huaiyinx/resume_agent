@@ -1,18 +1,20 @@
 // frontend/src/components/tree/VersionTree.tsx
-// React Flow 画布，渲染 mock 版本树
+// React Flow 画布，从 GET /api/tree 获取版本树并渲染
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
+  useNodesState,
+  useEdgesState,
   type Node,
   type Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { mockTree } from '@/data/mockTree';
+import { getTree } from '@/lib/api';
+import type { TreeData, ResumeNode } from '@/types/tree';
 import MasterNode, { type MasterNodeData } from './nodes/MasterNode';
 import BranchNode, { type BranchNodeData } from './nodes/BranchNode';
 import CompanyNode, { type CompanyNodeData } from './nodes/CompanyNode';
@@ -23,84 +25,181 @@ const nodeTypes = {
   company: CompanyNode,
 };
 
-/** 布局位置：从左到右三层 */
-const POSITION_MAP: Record<string, { x: number; y: number }> = {
-  master: { x: 80, y: 200 },
-  security: { x: 310, y: 130 },
-  algorithm: { x: 310, y: 310 },
-  'tencent-researcher': { x: 570, y: 90 },
-  'bytedance-security': { x: 570, y: 190 },
-  'bytedance-algorithm': { x: 570, y: 310 },
-};
+/** 列布局 x 坐标：master → branch → company */
+const X_MASTER = 80;
+const X_BRANCH = 340;
+const X_COMPANY = 640;
 
-export default function VersionTree() {
-  const { nodes, edges } = useMemo(() => {
-    const nodes: Node[] = mockTree.nodes.map((n) => {
-      const pos = POSITION_MAP[n.node_id] ?? { x: 0, y: 0 };
-      const base = { id: n.node_id, type: n.node_type, position: pos };
+/** 各层垂直间距 */
+const BRANCH_GAP = 180;
+const COMPANY_GAP = 110;
 
-      if (n.node_type === 'master') {
-        return {
-          ...base,
-          data: { label: 'master', sublabel: 'main' } as MasterNodeData,
-        };
-      }
-      if (n.node_type === 'branch') {
-        return {
-          ...base,
-          data: { label: n.title, direction: n.direction ?? '' } as BranchNodeData,
-        };
-      }
-      // company
-      const [company, ...rest] = n.title.split(' ');
-      return {
-        ...base,
-        data: {
-          label: n.title,
-          company: company,
-          role: rest.join(' '),
-        } as CompanyNodeData,
-      };
-    });
+interface VersionTreeProps {
+  /** 变化时触发重新拉取版本树（由上传成功后递增） */
+  refreshKey?: number;
+}
 
-    const edges: Edge[] = mockTree.edges.map((e, i) => ({
-      id: `e-${i}`,
-      source: e.source,
-      target: e.target,
-      type: 'smoothstep',
-      animated: false,
-      style: { stroke: '#a78bfa', strokeWidth: 1.8, opacity: 0.5 },
-    }));
+/** 根据节点类型映射为 ReactFlow Node data */
+function toFlowNode(n: ResumeNode, position: { x: number; y: number }): Node {
+  const base = {
+    id: n.node_id,
+    type: n.node_type,
+    position,
+    draggable: true,
+    selectable: true,
+    connectable: false,
+  };
 
-    return { nodes, edges };
-  }, []);
+  if (n.node_type === 'master') {
+    return {
+      ...base,
+      data: { label: 'master', sublabel: 'main' } as MasterNodeData,
+    };
+  }
+  if (n.node_type === 'branch') {
+    return {
+      ...base,
+      data: { label: n.title, direction: n.direction ?? '' } as BranchNodeData,
+    };
+  }
+  // company: title 形如 "Tencent 安全研究员"
+  const [company, ...rest] = n.title.split(' ');
+  return {
+    ...base,
+    data: {
+      label: n.title,
+      company: company,
+      role: rest.join(' '),
+    } as CompanyNodeData,
+  };
+}
+
+/** 计算三层布局位置（master 居中，branch / company 各自垂直居中分布） */
+function layoutTree(tree: TreeData): { nodes: Node[]; edges: Edge[] } {
+  const masters = tree.nodes.filter((n) => n.node_type === 'master');
+  const branches = tree.nodes.filter((n) => n.node_type === 'branch');
+  const companies = tree.nodes.filter((n) => n.node_type === 'company');
+
+  const nodes: Node[] = [];
+
+  // master：取第一个，垂直居中于 0
+  masters.forEach((n, i) => {
+    nodes.push(toFlowNode(n, { x: X_MASTER, y: i * BRANCH_GAP }));
+  });
+
+  // branch：垂直居中分布
+  const branchOffset = (branches.length - 1) * (BRANCH_GAP / 2);
+  branches.forEach((n, i) => {
+    nodes.push(toFlowNode(n, { x: X_BRANCH, y: i * BRANCH_GAP - branchOffset }));
+  });
+
+  // company：垂直居中分布
+  const companyOffset = (companies.length - 1) * (COMPANY_GAP / 2);
+  companies.forEach((n, i) => {
+    nodes.push(toFlowNode(n, { x: X_COMPANY, y: i * COMPANY_GAP - companyOffset }));
+  });
+
+  const edges: Edge[] = tree.edges.map((e, i) => ({
+    id: `e-${i}`,
+    source: e.source,
+    target: e.target,
+    type: 'smoothstep',
+    animated: false,
+    style: { stroke: '#a78bfa', strokeWidth: 1.8, opacity: 0.5 },
+  }));
+
+  return { nodes, edges };
+}
+
+export default function VersionTree({ refreshKey = 0 }: VersionTreeProps) {
+  const [tree, setTree] = useState<TreeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    getTree()
+      .then((data) => {
+        if (!cancelled) {
+          setTree(data);
+          setLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : '加载版本树失败');
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
+
+  // 当 tree 数据变化时，重新计算布局并更新 nodes/edges
+  useEffect(() => {
+    if (!tree) return;
+    const { nodes: flowNodes, edges: flowEdges } = layoutTree(tree);
+    setNodes(flowNodes);
+    setEdges(flowEdges);
+  }, [tree, setNodes, setEdges]);
+
+  // 加载中
+  if (loading) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-sm text-text-muted">加载版本树...</div>
+      </div>
+    );
+  }
+
+  // 加载失败
+  if (error) {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        <div className="text-sm text-error">✗ 加载失败</div>
+        <div className="text-xs text-text-muted">{error}</div>
+      </div>
+    );
+  }
+
+  // 空树
+  if (!tree || tree.nodes.length === 0) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-sm text-text-muted">
+          暂无版本树节点，拖入旧简历即可创建初始版本
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full h-full">
+    <div className="absolute inset-0">
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
+        nodesDraggable
         fitView
         fitViewOptions={{ padding: 0.2 }}
         proOptions={{ hideAttribution: true }}
       >
         <Background color="#e2e8f0" gap={30} size={1} />
         <Controls
-          className="!bg-bg-secondary !border-border-default !rounded-md"
-          showInteractive={false}
-        />
-        <MiniMap
-          className="!bg-bg-secondary !border-border-default !rounded-md"
-          nodeColor={(node) => {
-            switch (node.type) {
-              case 'master': return '#0891b2';
-              case 'branch': return '#7c3aed';
-              case 'company': return '#d97706';
-              default: return '#cbd5e1';
-            }
+          style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
           }}
-          maskColor="rgba(241, 245, 249, 0.7)"
+          showInteractive={false}
         />
       </ReactFlow>
 

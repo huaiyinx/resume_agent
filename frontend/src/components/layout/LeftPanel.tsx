@@ -62,7 +62,12 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   ),
 };
 
-export default function LeftPanel() {
+interface LeftPanelProps {
+  /** 简历上传+解析成功后触发，用于刷新版本树 */
+  onTreeRefresh?: () => void;
+}
+
+export default function LeftPanel({ onTreeRefresh }: LeftPanelProps) {
   const [activeNav, setActiveNav] = useState('总览面板');
 
   return (
@@ -133,6 +138,7 @@ export default function LeftPanel() {
         <UploadZone
           title="拖入旧简历 (PDF/Word)"
           hint="自动解析并创建初始版本"
+          onFileUploaded={() => onTreeRefresh?.()}
         />
         <UploadZone
           title="注入知识素材 (周报/论文/CTF/博客)"

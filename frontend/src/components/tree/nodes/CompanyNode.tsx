@@ -10,22 +10,24 @@ export interface CompanyNodeData {
   [key: string]: unknown;
 }
 
-export default function CompanyNode({ data }: NodeProps) {
+export default function CompanyNode({ data, selected }: NodeProps) {
   const nodeData = data as unknown as CompanyNodeData;
   return (
     <div
-      className="flex flex-col items-center justify-center rounded-lg bg-bg-secondary text-node-company border-2 border-node-company px-6 py-2 min-w-[140px] shadow-md"
+      className={`flex flex-col items-center justify-center rounded-lg bg-bg-secondary text-node-company border-2 px-6 py-2 min-w-[140px] shadow-md cursor-grab active:cursor-grabbing transition-shadow ${
+        selected ? 'border-brand-primary shadow-glow-primary' : 'border-node-company'
+      }`}
     >
-      <span className="text-xs font-semibold text-node-company">
+      <span className="text-xs font-semibold text-node-company pointer-events-none">
         {nodeData.company ?? nodeData.label}
       </span>
       {nodeData.role && (
-        <span className="text-xs text-text-primary">
+        <span className="text-xs text-text-primary pointer-events-none">
           {nodeData.role}
         </span>
       )}
-      <Handle type="source" position={Position.Right} className="!bg-node-company !border-node-company" />
-      <Handle type="target" position={Position.Left} className="!bg-node-company !border-node-company" />
+      <Handle type="source" position={Position.Right} className="!bg-node-company !border-node-company !w-2 !h-2" />
+      <Handle type="target" position={Position.Left} className="!bg-node-company !border-node-company !w-2 !h-2" />
     </div>
   );
 }

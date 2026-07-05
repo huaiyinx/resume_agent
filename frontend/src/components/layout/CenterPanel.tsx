@@ -7,7 +7,12 @@ import VersionTree from '@/components/tree/VersionTree';
 
 const TAB_PILLS = ['版本树', '编辑器', 'Diff 对比'] as const;
 
-export default function CenterPanel() {
+interface CenterPanelProps {
+  /** 版本树刷新 key，变化时重新拉取 */
+  treeRefreshKey?: number;
+}
+
+export default function CenterPanel({ treeRefreshKey }: CenterPanelProps) {
   const [activeTab, setActiveTab] = useState<string>('版本树');
 
   return (
@@ -34,7 +39,7 @@ export default function CenterPanel() {
 
       {/* Version tree canvas */}
       <div className="flex-1 relative overflow-hidden">
-        <VersionTree />
+        <VersionTree refreshKey={treeRefreshKey} />
       </div>
 
       {/* Canvas toolbar */}

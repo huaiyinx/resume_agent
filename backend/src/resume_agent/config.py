@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     llm_provider: str = "openai"  # openai / claude / deepseek / custom
     llm_api_key: str = ""
     llm_base_url: str = ""
+    llm_model: str = "gpt-4o"  # deepseek 用 deepseek-chat
 
     # === Embedding 配置 ===
     embedding_provider: str = "openai"  # openai / deepseek
