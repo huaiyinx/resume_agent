@@ -49,6 +49,8 @@ export default function MainLayout() {
         knowledgeRefreshKey={knowledgeRefreshKey}
         onKnowledgeRefresh={handleKnowledgeRefresh}
       />
+      {/* 右栏始终可见：JD 截图分析 / Gap 报告 / AI 导师均在此栏，
+          无需随导航项切换（"职位截图分析"等导航仅影响中栏视图） */}
       <RightPanel />
     </div>
   );

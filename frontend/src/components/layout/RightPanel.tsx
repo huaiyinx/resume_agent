@@ -1,7 +1,12 @@
 // frontend/src/components/layout/RightPanel.tsx
 // 右栏：JD 分析卡片 + Gap 报告列表 + AI 生成预览区（空状态）
+// US-4：JD 分析区域接入真实后端（analyzeJD），无结果时显示 JDUploadZone，
+//       有结果时显示 JDCard + "重新分析"按钮。
 
-const JD_TAGS = ['C++', 'Python', '漏洞挖掘', 'x86汇编', '逆向工程'];
+import { useState } from 'react';
+import JDUploadZone from '@/components/jd/JDUploadZone';
+import JDCard from '@/components/jd/JDCard';
+import type { JDAnalysisResult } from '@/types/jd';
 
 const GAP_ITEMS = [
   { name: 'C++ 底层', desc: '精通内存管理、模板编程', status: 'covered' },
@@ -19,6 +24,17 @@ const GAP_BADGE: Record<string, { label: string; cls: string }> = {
 };
 
 export default function RightPanel() {
+  // JD 分析结果（US-4）：null 时显示上传区，非 null 时显示 JDCard
+  const [jdResult, setJdResult] = useState<JDAnalysisResult | null>(null);
+
+  function handleJDAnalyzed(result: JDAnalysisResult) {
+    setJdResult(result);
+  }
+
+  function handleReset() {
+    setJdResult(null);
+  }
+
   return (
     <aside
       className="flex flex-col overflow-y-auto bg-bg-secondary border-l border-border-default"
@@ -42,76 +58,21 @@ export default function RightPanel() {
           职位截图分析
         </div>
 
-        {/* JD upload zone */}
-        <div className="border-[1.5px] border-dashed border-border-default rounded-md p-3 text-center mb-3 transition-all cursor-pointer hover:border-brand-primary hover:bg-brand-primary-muted">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className="mx-auto mb-1 text-text-muted"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="M21 15l-5-5L5 21" />
-          </svg>
-          <span className="text-xs text-text-muted">拖入职位截图 (PNG/JPG)</span>
-        </div>
-
-        {/* JD card */}
-        <div className="bg-bg-tertiary rounded-lg p-4 border border-border-subtle">
-          <div className="text-md font-semibold mb-3 text-text-primary">
-            Tencent <span className="text-text-tertiary font-normal">/ 安全研究员</span>
+        {/* 无分析结果：上传区；有结果：结构化卡片 + 重新分析 */}
+        {jdResult ? (
+          <div className="flex flex-col gap-2">
+            <JDCard result={jdResult} />
+            <button
+              type="button"
+              onClick={handleReset}
+              className="self-start text-xs px-3 py-1.5 rounded-md border border-border-default text-text-secondary bg-bg-elevated cursor-pointer transition-all hover:border-brand-primary hover:text-brand-primary font-body"
+            >
+              重新分析
+            </button>
           </div>
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {JD_TAGS.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs px-2.5 bg-bg-elevated text-text-secondary rounded-full border border-border-subtle font-mono tracking-wider"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          <div className="text-xs font-semibold text-text-tertiary uppercase tracking-wide mb-2 mt-3">
-            硬技能
-          </div>
-          {['精通 C/C++ 底层开发，熟悉内存安全机制', '具备独立漏洞挖掘与分析能力', '熟悉 x86/ARM 汇编与逆向工程工具链'].map((item) => (
-            <div key={item} className="flex items-start gap-2 text-sm text-text-secondary mb-1.5 leading-snug">
-              <svg className="w-3.5 h-3.5 flex-shrink-0 mt-px text-success" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 8l4 4 6-7" />
-              </svg>
-              {item}
-            </div>
-          ))}
-
-          <div className="text-xs font-semibold text-text-tertiary uppercase tracking-wide mb-2 mt-3">
-            软技能
-          </div>
-          {['跨团队协作与安全事件应急响应', '技术文档撰写与安全报告输出'].map((item) => (
-            <div key={item} className="flex items-start gap-2 text-sm text-text-secondary mb-1.5 leading-snug">
-              <svg className="w-3.5 h-3.5 flex-shrink-0 mt-px text-success" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 8l4 4 6-7" />
-              </svg>
-              {item}
-            </div>
-          ))}
-
-          <div className="text-xs font-semibold text-text-tertiary uppercase tracking-wide mb-2 mt-3">
-            加分项
-          </div>
-          {['CTF 竞赛获奖经历', '有 CVE 编号或安全会议演讲经验'].map((item) => (
-            <div key={item} className="flex items-start gap-2 text-sm text-text-secondary mb-1.5 leading-snug">
-              <svg className="w-3.5 h-3.5 flex-shrink-0 mt-px text-warning" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z" />
-              </svg>
-              {item}
-            </div>
-          ))}
-        </div>
+        ) : (
+          <JDUploadZone onAnalyzed={handleJDAnalyzed} />
+        )}
       </section>
 
       {/* Section 2: Gap 报告 */}

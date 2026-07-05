@@ -19,6 +19,7 @@ import type {
   KnowledgeUploadResponse,
   SearchResponse,
 } from '@/types/knowledge';
+import type { JDAnalysisResult } from '@/types/jd';
 
 const BASE_URL = '/api';
 
@@ -206,4 +207,16 @@ export async function deleteKnowledgeDocument(
   uploadId: string,
 ): Promise<void> {
   await api.del<null>(`/knowledge/documents/${encodeURIComponent(uploadId)}`);
+}
+
+// ===== JD 截图分析相关 API（US-4）=====
+
+/**
+ * 上传职位文件（截图/PDF/TXT，支持多文件）并触发 LLM 结构化分析。
+ * multipart/form-data，后端 OCR + LLM 提取岗位/公司/技术栈/技能等（含去重）。
+ */
+export async function analyzeJD(files: File[]): Promise<JDAnalysisResult> {
+  const formData = new FormData();
+  files.forEach((f) => formData.append('files', f));
+  return api.upload<JDAnalysisResult>('/jd/analyze', formData);
 }

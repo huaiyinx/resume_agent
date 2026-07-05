@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     embedding_provider: str = "openai"  # openai / deepseek
     embedding_model: str = "text-embedding-3-small"
 
+    # === MinerU 文档解析 API ===
+    mineru_api_token: str = ""
+    mineru_api_base: str = "https://mineru.net"
+
     # === 数据存储 ===
     resume_agent_home: Path = Path.home() / ".resume-agent"
     sqlite_path: Path = Path.home() / ".resume-agent" / "data.db"
