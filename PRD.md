@@ -1,6 +1,6 @@
 # Resume-Agent 产品需求文档（PRD）
 
-> 文档版本：v1.0　|　状态：DRAFT　|　日期：2026-07-04　|　定位：开源个人简历管理系统
+> 文档版本：v1.1　|　状态：ACTIVE　|　日期：2026-07-05　|　定位：开源个人简历管理系统
 
 ---
 
@@ -20,11 +20,23 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 |------|--------|----------|
 | 简历导入解析成功率 | ≥ 90% | 100 份真实 PDF/Word 简历测试集 |
 | 知识库语义检索 Precision@5 | ≥ 85% | 50 条标准查询 benchmark |
-| JD 截图结构化提取准确率 | ≥ 80% | 多模态 LLM 对 30 张招聘截图提取结果人工评估 |
+| JD 截图结构化提取准确率 | ≥ 80% | 30 张招聘截图提取结果人工评估 |
 | AI 生成简历内容可用率 | ≥ 75% | 用户主观评分 ≥ 4/5，套话率 < 15% |
 | 端到端生成延迟（含 PDF） | ≤ 30s | 选定岗位到 PDF 产出，P95 |
-| 部署到可用时间 | ≤ 15 分钟 | 从 clone 到首次访问工作台，含 Docker 拉取 |
+| 部署到可用时间 | ≤ 15 分钟 | 从 clone 到首次访问工作台 |
 | Docker 镜像大小 | ≤ 500MB | 多阶段构建，剔除构建依赖 |
+
+### MVP 完成状态（v1.0）
+
+| 用户故事 | 状态 | 实现方式 |
+|----------|------|----------|
+| US-1 资产冷启动 | ✅ | PyMuPDF + python-docx 解析，版本树初始化 |
+| US-2 版本树管理 | ✅ | React Flow v12 可视化，节点 CRUD，面包屑导航 |
+| US-3 知识库 RAG | ✅ | Chroma 嵌入式 + all-MiniLM-L6-v2 本地 Embedding |
+| US-4 JD 截图分析 | ✅ | MinerU 云端 OCR + DeepSeek LLM 结构化提取，多文件去重 |
+| US-5 技能 Gap 报告 | ✅ | 向量相似度三色判定 + LLM 描述生成 |
+| US-6 AI 动态生成 | ✅ | 函数链工作流（检索→反思→撰写），不依赖 LangGraph |
+| US-7 PDF 导出 | ✅ | reportlab ATS 模板，STSong-Light CJK 字体 |
 
 ---
 
@@ -34,7 +46,7 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 
 **P1 — 算法工程师「林」**
 - 27 岁，硕士毕业 3 年，同时投递推荐算法、NLP、大模型方向
-- 痛点：每个方向要突出不同项目，改简历改到崩溃；优质论文和比赛经历散在多处
+- 痛点：每个方向要突出不同项目，改简历改到崩溃；优质论文和比赛经历散落多处
 - 期望：把所有素材丢进去，按岗位一键生成
 
 **P2 — 网络安全研究员「陈」**
@@ -47,95 +59,70 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 - 痛点：投递多了记不清每版突出了什么，面试前想对比版本差异
 - 期望：版本树可视化 + Diff 对比
 
-### User Stories & Acceptance Criteria
+### MVP User Stories（v1.0 已完成）
 
-#### US-1：资产冷启动（A2）
-**As a** 求职者，**I want** 拖入多份旧简历自动解析和去重，**so that** 我不用手动整理十几份文件。
+#### US-1~US-7：MVP 核心功能
 
-**Acceptance Criteria：**
-- [x] 支持 PDF 和 Word（.docx）格式拖拽上传
-- [x] 自动提取结构化字段：基本信息、教育经历、工作经历、项目经历、技能列表
-- [x] 多份简历间智能去重（同一公司同一岗位只保留最新版）
-- [x] 生成初始 Git 树：Master 主干 + 自动推断的方向分支
-- [x] 解析失败时保留原始文本并标注「需人工确认」
-- [ ] 单份简历解析 ≤ 5s（10 页以内）
+详见 v1.0 存档。完整链路已打通：上传简历 → 建知识库 → 分析 JD → Gap 报告 → AI 生成 → 导出 PDF。
 
-#### US-2：版本树管理（B1）
-**As a** 求职者，**I want** 用 Git 树可视化查看所有简历版本，**so that** 我能清楚知道哪个公司用了哪版。
+### v1.1 User Stories
+
+#### US-8：简历预览与模板系统（A5）
+**As a** 求职者，**I want** 在实时预览中选择简历模板并查看渲染效果，**so that** 我能挑选适合投递的排版风格。
 
 **Acceptance Criteria：**
-- [x] React Flow 渲染可缩放、可拖拽的树状画布
-- [x] 三种节点形态区分：主干（圆形/青色）、方向分支（圆角矩形/紫色）、公司节点（矩形/橙色）
-- [x] 点击节点进入编辑或预览
-- [x] 面包屑显示当前路径（Master → 安全岗 → Tencent-研究员）
-- [x] 支持手动新建分支/节点
-- [ ] 节点数量 ≤ 50 时画布渲染 ≤ 100ms
+- [ ] 至少 3 套内置模板（现代简约 / 经典学术 / 大厂技术）
+- [ ] 模板选择器：卡片式预览，点击切换
+- [ ] 实时预览：编辑内容后预览区即时刷新
+- [ ] AI 生成内容自动填充到模板对应字段
+- [ ] 模板内容可内联编辑（点击文字直接修改）
+- [ ] PDF 导出与预览一致（所见即所得）
+- [ ] 模板 JSON Schema 与排版分离（同一数据源，多模板渲染）
 
-#### US-3：知识库 RAG（A3 + A4）
-**As a** 求职者，**I want** 上传周报、论文、CTF 报告等素材建立个人知识库，**so that** AI 生成简历时能检索到我的真实经历。
-
-**Acceptance Criteria：**
-- [x] 支持 PDF、Word、Markdown、纯文本格式上传
-- [x] 文本切片（chunk size 512 tokens，overlap 50）
-- [x] 本地向量库（Chroma）存储，支持语义检索
-- [x] 左栏底部常驻知识库状态指示器（切片数、索引进度）
-- [x] 检索结果附带来源文档标注
-- [ ] 索引 100 篇文档 ≤ 60s
-
-#### US-4：JD 截图分析（C1）
-**As a** 求职者，**I want** 上传招聘截图自动提取岗位要求，**so that** 我不用逐字阅读 JD 手动整理。
+#### US-9：AI 智能补全（B6）
+**As a** 求职者，**I want** AI 根据缺少的内容自动从知识库找素材补全，**so that** 简历不遗漏关键经历。
 
 **Acceptance Criteria：**
-- [x] 支持 PNG、JPG、PDF、TXT、WEBP、DOC/DOCX 格式多文件上传
-- [x] MinerU OCR + DeepSeek LLM 提取结构化字段：技术栈、硬技能、软技能、加分项
-- [x] 多文件上传时自动合并去重
-- [x] 右栏 JD 卡片展示，支持编辑修正
-- [x] 截图提取失败时提示重新上传
-- [ ] 单张截图提取 ≤ 10s
+- [ ] 基于 Gap 报告识别"内容不足"的字段（如某段经历 highlights 只有 1 条）
+- [ ] 结合 JD 招聘需求和知识库语义检索，主动推荐可补充的素材
+- [ ] 推荐内容以"建议卡片"形式展示，用户可采纳或忽略
+- [ ] 采纳后内容写入对应字段，不覆盖已有内容
+- [ ] 不编造知识库中不存在的内容
+- [ ] 单次补全建议 ≤ 3 条，避免信息过载
 
-#### US-5：技能 Gap 报告（C2）
-**As a** 求职者，**I want** 看到岗位要求与个人能力的差距，**so that** 我知道面试前该补什么。
-
-**Acceptance Criteria：**
-- [x] 自动比对 JD 要求与知识库内容
-- [x] 三色状态标记：已覆盖（绿）、部分缺口（黄）、未涉及（红）
-- [x] 每项 Gap 附带具体描述
-- [x] 不编造、不虚构能力（基于知识库实际内容判断）
-- [ ] 报告生成 ≤ 5s
-
-#### US-6：AI 动态生成简历（B3）
-**As a** 求职者，**I want** 选定岗位后 AI 自动生成 1 页专属简历，**so that** 我不用手动裁剪经历。
+#### US-10：版本 Diff 对比（B5）
+**As a** 求职者，**I want** 选中两个节点查看差异，**so that** 我能清楚知道每版突出了什么。
 
 **Acceptance Criteria：**
-- [x] LangGraph Agent 工作流：检索 → 反思审核 → 撰写润色（用函数链实现等价工作流，不引入 LangGraph 依赖）
-- [x] 检索知识库中与 JD 相关的经历（Precision@5 ≥ 85%）
-- [x] 反思节点检测套话、前后矛盾、夸大表述（不承诺验证经历真实性）
-- [ ] 生成内容控制在 1 页 A4 以内
-- [ ] 生成延迟 ≤ 20s（含 LLM 调用）
-- [x] 生成结果可编辑修正
+- [ ] 选中版本树中任意两节点触发 Diff
+- [ ] 逐字段对比：新增（绿）/删除（红）/修改（黄）高亮
+- [ ] 支持 experience / projects / skills 三大段落
+- [ ] 差异列表可折叠/展开
+- [ ] 差异内容可复制到剪贴板
 
-#### US-7：PDF 导出（B4）
-**As a** 求职者，**I want** 一键导出 ATS 友好的 PDF，**so that** 我能直接用于投递。
+#### US-11：AI 导师学习建议（C3）
+**As a** 求职者，**I want** 基于 Gap 报告获得学习资源推荐，**so that** 我知道面试前该补什么。
 
 **Acceptance Criteria：**
-- [x] 至少 1 套 ATS 友好模板（经典学术 / 大厂技术 / 极简风，MVP 至少 1 套）
-- [x] JSON-to-Resume 数据与排版分离
-- [x] PDF 文本可选、可解析（通过 ATS 系统解析测试）
-- [x] 导出延迟 ≤ 3s
-- [ ] PDF 预览区实时同步
+- [ ] 基于 Gap 报告中"未涉及"和"部分缺口"的技能项
+- [ ] LLM 生成学习路径建议（概念→实践→验证）
+- [ ] 推荐学习资源类型：文档/课程/开源项目/面试题
+- [ ] 资源链接可点击跳转
+- [ ] 学习建议可标记"已掌握/学习中/待开始"状态
+- [ ] 不承诺资源链接的永久有效性
 
-### Non-Goals
+### Non-Goals（v1.1 明确排除）
 
-以下明确不在 MVP 范围内，保护时间线：
+以下不在 v1.1 范围内：
 
-- **多用户/协作**：MVP 是单用户本地应用，不做账号体系和权限管理
-- **云端同步**：不做跨设备同步，所有数据存本地
-- **版本对比 Diff 视图（B5）**：MVP 只做版本树展示，不做 Diff 详情对比
-- **上游继承自动合并（B2）**：MVP 手动新建分支，不实现 Master 修改自动传播
-- **AI 导师学习建议（C3）**：MVP 只做 Gap 报告，不做学习资源推荐
-- **投递时间线追踪**：不在 MVP 内
-- **移动端适配**：MVP 只做桌面端（≥ 1024px）
-- **开源模型本地运行（Ollama）**：MVP 用云端 LLM API，本地模型留后续
+- **多用户/协作**：仍是单用户本地应用
+- **云端同步**：不做跨设备同步
+- **上游继承自动合并（B2）**：手动新建分支，不实现自动传播
+- **投递时间线追踪**：不在 v1.1 内
+- **移动端适配**：仅桌面端（≥ 1024px）
+- **开源模型本地运行（Ollama）**：继续用云端 LLM API
+- **模板市场/自定义模板导入**：v1.1 只提供内置模板
+- **ATS 评分**：v1.1 不做自动评分
 
 ---
 
@@ -143,40 +130,64 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 
 ### Tool Requirements
 
-| 组件 | 技术选型 | 用途 |
-|------|----------|------|
-| Agent 框架 | LangGraph | 树状 Agent 工作流，支持检索→反思→撰写链路 |
-| 向量库 | Chroma（本地） | 简历素材切片存储与语义检索 |
-| 文档解析 | PyMuPDF（PDF）+ python-docx（Word） | 简历原文提取 |
-| 文本切片 | LangChain TextSplitter | chunk size 512 tokens，overlap 50 |
-| Embedding | OpenAI text-embedding-3-small（或 DeepSeek） | 向量化 |
-| LLM | GPT-4o / Claude 3.5 Sonnet（用户配置） | 简历解析、JD 提取、生成、反思 |
-| 多模态 | GPT-4o Vision | JD 截图 OCR + 结构化提取 |
-| PDF 生成 | React-pdf 或 Puppeteer | JSON-to-PDF 渲染 |
+| 组件 | 技术选型 | 用途 | MVP 实际 |
+|------|----------|------|----------|
+| Agent 工作流 | 函数链（非 LangGraph） | 检索→反思→撰写链路 | ✅ 已实现 |
+| 向量库 | Chroma（本地嵌入式） | 简历素材切片存储与语义检索 | ✅ 已实现 |
+| 文档解析 | PyMuPDF（PDF）+ python-docx（Word） | 简历原文提取 | ✅ 已实现 |
+| OCR | MinerU 云端 API | JD 截图/图片解析为 Markdown | ✅ 已实现 |
+| 文本切片 | 自实现 chunker | chunk size 512，overlap 50 | ✅ 已实现 |
+| Embedding | all-MiniLM-L6-v2（Chroma 内置） | 向量化，本地运行无需 API | ✅ 已实现 |
+| LLM | DeepSeek / OpenAI 兼容协议 | 简历解析、JD 提取、生成、反思 | ✅ 已实现 |
+| PDF 生成 | reportlab | ATS 友好 PDF，文本可选，CJK 字体 | ✅ 已实现 |
 
-### Agent 工作流（LangGraph）
+### Agent 工作流（函数链实现）
 
 ```
 [输入: 岗位JD + 选定的公司节点]
         │
         ▼
   ┌─────────────┐
-  │ 检索 Agent   │ ← Chroma 向量检索 Top-K 经历块
+  │ 检索         │ ← Chroma 向量检索 Top-K 经历块
   └──────┬──────┘
          │
          ▼
   ┌─────────────┐
-  │ 反思 Agent   │ ← 检测套话/矛盾/夸大，标注可信度
+  │ 反思         │ ← LLM 检测套话/矛盾/夸大，标注可信度
   └──────┬──────┘
          │ （不合格经历被过滤或要求重新检索）
          ▼
   ┌─────────────┐
-  │ 撰写 Agent   │ ← 按模板拼装、润色，控制 1 页
+  │ 撰写         │ ← LLM 按模板拼装、润色
   └──────┬──────┘
          │
          ▼
   [输出: 结构化简历 JSON → PDF]
 ```
+
+v1.1 扩展：在撰写后新增「补全」节点，基于 Gap 报告主动检索缺失内容的素材。
+
+### v1.1 模板系统架构
+
+```
+简历数据 JSON（统一数据源）
+    │
+    ├── 模板 A: 现代简约（reportlab platypus）
+    ├── 模板 B: 经典学术（reportlab platypus）
+    └── 模板 C: 大厂技术（reportlab platypus）
+    │
+    ▼
+实时预览（前端 SVG/Canvas 渲染）
+    │
+    ▼
+PDF 导出（reportlab，与预览一致）
+```
+
+模板设计原则：
+- **数据与排版分离**：同一 JSON 数据，不同模板渲染
+- **ATS 友好**：所有模板生成的 PDF 文本可选可解析
+- **CJK 支持**：STSong-Light CID 字体
+- **无外部字体依赖**：不要求用户安装字体文件
 
 ### Evaluation Strategy
 
@@ -187,6 +198,8 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 | JD 提取准确率 | 30 张招聘截图（App/网页/海报） | 字段提取 ≥ 80% |
 | 生成内容可用率 | 人工评审 20 份生成简历 | 可用率 ≥ 75%，套话率 < 15% |
 | 反思过滤有效性 | 对比「有/无反思」的生成质量 | 套话率降低 ≥ 30% |
+| 模板渲染一致性 | 预览 vs PDF 逐像素对比 | 关键区域一致率 ≥ 95% |
+| 智能补全采纳率 | 20 次补全建议，用户采纳比例 | ≥ 50% |
 
 ---
 
@@ -200,7 +213,8 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 │  React + Vite + TypeScript + Tailwind CSS + React Flow      │
 │  ┌──────────┐  ┌──────────────┐  ┌────────────┐            │
 │  │ 左栏导航  │  │ 中栏版本树    │  │ 右栏分析   │            │
-│  │ + 上传区  │  │ + PDF预览    │  │ + Gap报告 │            │
+│  │ + 上传区  │  │ + 简历预览   │  │ + Gap报告  │            │
+│  │ + 知识库  │  │ + 模板选择   │  │ + AI生成   │            │
 │  └─────┬────┘  └──────┬───────┘  └─────┬──────┘            │
 │        └──────────────┼─────────────────┘                    │
 │                       │ REST API (JSON)                      │
@@ -209,38 +223,46 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 ┌───────────────────────┼─────────────────────────────────────┐
 │              FastAPI 后端（Python）                          │
 │  ┌────────────┐  ┌────────────┐  ┌──────────────┐          │
-│  │ 简历解析API  │  │ RAG检索API │  │ LangGraph    │          │
-│  │ PyMuPDF/    │  │ Chroma    │  │ Agent工作流   │          │
-│  │ python-docx │  │            │  │ (检索→反思→   │          │
-│  │             │  │            │  │  撰写)       │          │
+│  │ 简历解析API  │  │ RAG检索API │  │ AI生成工作流  │          │
+│  │ PyMuPDF/    │  │ Chroma     │  │ (检索→反思→   │          │
+│  │ python-docx │  │ all-MiniLM │  │  撰写→补全)   │          │
 │  └────────────┘  └────────────┘  └──────────────┘          │
+│  ┌────────────┐  ┌────────────┐  ┌──────────────┐          │
+│  │ MinerU OCR │  │ Gap报告    │  │ PDF导出       │          │
+│  │ 云端API     │  │ 向量相似度  │  │ reportlab     │          │
+│  └────────────┘  └────────────┘  │ 多模板渲染    │          │
+│                                   └──────────────┘          │
 │  ┌────────────────────────────────────────────┐             │
-│  │ SQLite — 简历版本树/节点元数据/知识库索引    │             │
+│  │ SQLite — 版本树/节点元数据/知识库索引        │             │
 │  └────────────────────────────────────────────┘             │
 │  ┌────────────────────────────────────────────┐             │
-│  │ Chroma — 向量库（简历/素材切片）             │             │
+│  │ Chroma — 向量库（all-MiniLM-L6-v2 本地）    │             │
 │  └────────────────────────────────────────────┘             │
 └─────────────────────────────────────────────────────────────┘
                         │
                         ▼
-              云端 LLM API（OpenAI/Claude/DeepSeek）
+        云端 LLM API（DeepSeek/OpenAI 兼容）
+        云端 OCR API（MinerU）
 ```
 
 ### Integration Points
 
-| 端点 | 方法 | 用途 |
-|------|------|------|
-| `/api/resumes/upload` | POST | 上传简历文件（PDF/Word） |
-| `/api/resumes/parse` | POST | 解析简历→结构化 JSON |
-| `/api/tree` | GET | 获取版本树结构 |
-| `/api/tree/node` | POST | 新建分支/节点 |
-| `/api/knowledge/upload` | POST | 上传知识素材 |
-| `/api/knowledge/index` | POST | 触发索引 |
-| `/api/knowledge/search` | POST | 语义检索 |
-| `/api/jd/analyze` | POST | 上传截图→结构化提取 |
-| `/api/gap-report` | POST | 生成 Gap 报告 |
-| `/api/generate` | POST | AI 生成简历 |
-| `/api/export/pdf` | POST | 导出 PDF |
+| 端点 | 方法 | 用途 | 版本 |
+|------|------|------|------|
+| `/api/resumes/upload` | POST | 上传简历文件（PDF/Word） | v1.0 ✅ |
+| `/api/tree` | GET | 获取版本树结构 | v1.0 ✅ |
+| `/api/tree/node` | POST | 新建分支/节点 | v1.0 ✅ |
+| `/api/knowledge/upload` | POST | 上传知识素材 | v1.0 ✅ |
+| `/api/knowledge/search` | POST | 语义检索 | v1.0 ✅ |
+| `/api/jd/analyze` | POST | 多文件截图→结构化提取 | v1.0 ✅ |
+| `/api/gap-report` | POST | 生成 Gap 报告 | v1.0 ✅ |
+| `/api/generate` | POST | AI 生成简历段落 | v1.0 ✅ |
+| `/api/export/pdf` | POST | 导出 PDF | v1.0 ✅ |
+| `/api/templates` | GET | 获取模板列表 | v1.1 |
+| `/api/templates/{id}/preview` | POST | 渲染模板预览 | v1.1 |
+| `/api/generate/suggest` | POST | AI 智能补全建议 | v1.1 |
+| `/api/tree/diff` | POST | 两节点 Diff 对比 | v1.1 |
+| `/api/tutor/suggest` | POST | AI 导师学习建议 | v1.1 |
 
 ### 数据存储
 
@@ -249,163 +271,42 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 | SQLite | 简历版本树结构、节点元数据、上传记录 | 本地 `~/.resume-agent/data.db` |
 | Chroma | 简历切片 + 知识素材切片的向量索引 | 本地 `~/.resume-agent/chroma/` |
 | 文件系统 | 原始上传文件、生成的 PDF | 本地 `~/.resume-agent/files/` |
-| LLM API Key | 用户配置的云端 API Key | 本地配置文件（不传云端） |
+| LLM API Key | 用户配置的云端 API Key | 本地 `.env`（不传云端） |
 
 ### Security & Privacy
 
 - **本地优先**：所有简历数据、知识库素材存储在用户本地文件系统，不上传到任何云端服务器
-- **API Key 安全**：LLM API Key 存储在本地配置文件，仅后端调用时使用，前端不接触
+- **API Key 安全**：LLM API Key 存储在本地 `.env`，仅后端调用时使用，前端不接触
 - **数据脱敏**：调用 LLM API 时传输的内容为简历文本（用户知情），不包含用户身份信息
 - **无追踪**：不植入 analytics、不打点、不上报使用数据
 - **开源透明**：代码开源，用户可审计数据处理流程
 
 ### 开源部署与分发
 
-本项目面向开源社区，部署便捷性是核心体验。用户（技术背景求职者）应能在 **15 分钟内** 从 clone 到可用。
+本项目面向开源社区，部署便捷性是核心体验。用户应能在 **15 分钟内** 从 clone 到可用。
 
-#### 部署方式（按优先级）
+#### 部署方式
 
-| 方式 | 目标用户 | 命令 | MVP |
-|------|----------|------|-----|
-| **Docker Compose** | 有 Docker 环境的用户 | `docker compose up` | ✅ 首选 |
-| **源码 + Makefile** | 想改代码的开发者 | `make install && make dev` | ✅ |
-| **一键脚本** | 不想装 Docker 的用户 | `curl -fsSL install.sh \| sh` | v0.2 |
-| **桌面应用（Tauri）** | 非技术用户 | 下载 .dmg/.AppImage | v1.0 |
-
-#### Docker Compose 部署方案（MVP 首选）
-
-```yaml
-# docker-compose.yml（核心结构）
-services:
-  resume-agent:
-    build: .
-    ports: ["5173:5173"]        # 前端 + API 同一端口
-    volumes:
-      - ~/.resume-agent:/root/.resume-agent  # 数据持久化
-    environment:
-      - LLM_PROVIDER=openai      # 或 claude / deepseek
-      - LLM_API_KEY=${LLM_API_KEY}
-      - LLM_BASE_URL=             # 可选，支持代理/私有部署
-```
-
-**关键设计决策：**
-
-1. **单容器部署**：前端 build 后由 FastAPI 静态文件托管，用户只启动 1 个容器、访问 1 个端口（5173）。避免「前端跑 3000、后端跑 8000」的双进程体验。
-2. **Chroma 嵌入式模式**：使用 `chromadb` 的 PersistentClient 嵌入式模式，无需单独启动 Chroma server。数据落盘到挂载卷。
-3. **数据卷挂载**：`~/.resume-agent` 整个挂载到容器，包含 SQLite、Chroma 索引、上传文件。容器删除数据不丢。
-4. **环境变量配置**：所有配置通过环境变量注入，支持 `.env` 文件。无需进入容器改配置。
-
-#### 源码部署方案（开发者）
-
-```bash
-# 1. 克隆
-git clone https://github.com/<org>/resume-agent.git
-cd resume-agent
-
-# 2. 安装依赖（uv 管 Python，pnpm 管 Node）
-make install
-# 等价于：
-#   uv sync                    # Python 依赖（pyproject.toml + uv.lock）
-#   pnpm install                # Node 依赖（package.json + pnpm-lock.yaml）
-
-# 3. 配置 LLM
-cp .env.example .env
-# 编辑 .env 填入 LLM_API_KEY
-
-# 4. 启动开发环境（前后端热更新）
-make dev
-# 前端 http://localhost:5173，API http://localhost:5173/api
-```
+| 方式 | 目标用户 | 命令 | 状态 |
+|------|----------|------|------|
+| **Docker Compose** | 有 Docker 环境的用户 | `docker compose up` | ✅ v1.0 |
+| **源码 + Makefile** | 想改代码的开发者 | `make install && make dev` | ✅ v1.0 |
+| **一键脚本** | 不想装 Docker 的用户 | `curl -fsSL install.sh \| sh` | v1.2 |
 
 #### 依赖管理
 
 | 语言 | 工具 | 锁文件 | 版本要求 |
 |------|------|--------|----------|
-| Python | uv | `uv.lock` | Python ≥ 3.11 |
+| Python | uv | `uv.lock` | Python ≥ 3.12 |
 | Node | pnpm | `pnpm-lock.yaml` | Node ≥ 20 |
-
-- **uv**：比 pip/poetry 快 10-100x，Rust 编写，零配置。锁定全部依赖版本保证可复现。
-- **pnpm**：比 npm 快、省磁盘空间，严格锁定。
-- **Makefile**：封装常用命令（install / dev / build / test / lint），开发者无需记忆多套工具链。
-
-#### 首次启动引导（Onboarding）
-
-首次访问 `localhost:5173` 时，若检测到未配置 API Key，进入引导流程：
-
-```
-步骤 1/3：选择 LLM 提供商
-  ○ OpenAI（GPT-4o）
-  ○ Anthropic（Claude 3.5 Sonnet）
-  ○ DeepSeek
-  ○ 自定义（填 Base URL + Key，支持代理/私有部署）
-
-步骤 2/3：输入 API Key
-  [________________]  ← 仅存本地，不传任何服务器
-
-步骤 3/3：验证连通性
-  → 调用一次轻量 API 测试 Key 有效性
-  ✓ 验证通过 / ✗ 请检查 Key
-
-完成 → 进入空状态工作台，左栏提示「拖入旧简历开始」
-```
-
-- API Key 写入 `~/.resume-agent/.env`，不进 Git
-- 支持后续在「设置」页修改提供商和 Key
-- 支持自定义 Base URL（满足用代理、私有部署 LLM 的用户）
 
 #### 跨平台支持
 
-| 平台 | MVP 支持 | 说明 |
+| 平台 | 支持状态 | 说明 |
 |------|----------|------|
 | macOS（Intel + Apple Silicon） | ✅ | 主要开发和测试平台 |
 | Linux（Ubuntu 22.04+ / Debian 12+） | ✅ | Docker 方案优先验证 |
-| Windows（WSL2） | ✅ 通过 WSL2 | 原生 Windows 支持留 v0.2 |
-| Windows（原生） | ⚠️ v0.2 | PyMuPDF/Chroma 路径需适配 |
-
-- CI（GitHub Actions）跑 macOS + Ubuntu 双平台测试
-- 路径处理统一用 `pathlib`，避免硬编码分隔符
-
-#### 开源仓库结构
-
-```
-resume-agent/
-├── README.md                    # 快速开始（5 行命令跑起来）
-├── docker-compose.yml           # Docker 部署
-├── Dockerfile                   # 多阶段构建（前端 build + Python 运行时）
-├── Makefile                     # install / dev / build / test / lint
-├── .env.example                 # 配置模板
-├── CONTRIBUTING.md              # 贡献指南
-├── LICENSE                      # MIT 或 Apache 2.0
-├── backend/
-│   ├── pyproject.toml           # uv 管理依赖
-│   ├── uv.lock
-│   ├── src/resume_agent/
-│   │   ├── main.py              # FastAPI 入口 + 静态文件托管
-│   │   ├── api/                 # 路由
-│   │   ├── agents/              # LangGraph 工作流
-│   │   ├── parsers/             # 简历解析
-│   │   ├── rag/                 # Chroma + 检索
-│   │   └── config.py            # 环境变量配置
-│   └── tests/
-├── frontend/
-│   ├── package.json             # pnpm 管理依赖
-│   ├── pnpm-lock.yaml
-│   ├── vite.config.ts
-│   └── src/
-└── docs/
-    ├── deployment.md            # 详细部署文档
-    ├── configuration.md         # 配置项说明
-    └── architecture.md          # 架构说明
-```
-
-#### 开源治理
-
-- **License**：MIT（最宽松，允许商用衍生）
-- **CONTRIBUTING.md**：明确开发环境搭建、PR 流程、代码规范
-- **Issue 模板**：Bug report + Feature request 模板
-- **CI/CD**：GitHub Actions 跑 lint + test，PR 必须通过才能合并
-- **Release**：语义化版本（SemVer），每个 Release 附带 Docker 镜像 tag
-- **文档**：README 5 行命令跑起来是硬要求，复杂配置留 `docs/`
+| Windows（WSL2） | ✅ 通过 WSL2 | 原生 Windows 支持留 v1.2 |
 
 ---
 
@@ -413,32 +314,32 @@ resume-agent/
 
 ### Phased Rollout
 
-| 阶段 | 内容 | 预估周期 |
-|------|------|----------|
-| **MVP (v0.1)** | 6 项核心功能：资产冷启动 + 版本树 + 知识库RAG + JD分析 + Gap报告 + AI生成 + PDF导出 | 6-8 周 |
-| **v0.2** | 上游继承自动合并(B2) + 版本 Diff 对比(B5) + 多模板支持 | +3 周 |
-| **v0.3** | AI 导师学习建议(C3) + 投递时间线 + 移动端适配 | +4 周 |
-| **v1.0** | 开源模型本地运行(Ollama) + 模板市场 + 插件系统 | +6 周 |
+| 阶段 | 内容 | 状态 | 预估周期 |
+|------|------|------|----------|
+| **v1.0 MVP** | US-1~US-7：资产冷启动 + 版本树 + 知识库RAG + JD分析 + Gap报告 + AI生成 + PDF导出 | ✅ 已完成 | 6 周 |
+| **v1.1** | US-8~US-11：简历预览/模板 + 智能补全 + 版本Diff + AI导师 | 🔜 进行中 | 4-5 周 |
+| **v1.2** | 上游继承自动合并 + 一键安装脚本 + Windows 原生支持 | 📋 规划中 | +3 周 |
+| **v2.0** | 开源模型本地运行(Ollama) + 模板市场 + 插件系统 + 移动端 | 📋 规划中 | +6 周 |
 
 ### Technical Risks
 
 | 风险 | 影响 | 概率 | 缓解措施 |
 |------|------|------|----------|
-| 简历解析准确率不达标 | 冷启动体验差，用户流失 | 中 | 多解析器兜底（PyMuPDF + LLM 辅助），人工确认机制 |
-| LangGraph 反思节点效果差 | 生成内容套话率高 | 中 | 设计反思 Prompt benchmark，迭代优化；设置套话率红线 < 15% |
-| LLM API 延迟和成本 | 生成简历太慢/太贵 | 中 | 流式输出 + 缓存检索结果；支持多家 API 切换以降本 |
-| Chroma 大规模性能 | 1000+ 切片检索变慢 | 低 | MVP 规模（百级）足够，预留切换 PGVector 方案 |
-| React Flow 复杂交互 | 拖拽/缩放体验不流畅 | 低 | 节点数 ≤ 50 时无压力；虚拟化渲染留后续 |
-| JD 截图多样性格式 | App 截图/海报提取失败率 | 中 | 限制 MVP 支持标准网页截图，复杂格式标注「需人工确认」 |
-| Docker 镜像跨平台兼容 | ARM/AMD 架构构建失败 | 中 | Docker buildx 多架构构建，CI 验证 mac/linux 双平台 |
-| Python + Node 双栈安装门槛 | 非 Docker 用户环境搭建失败 | 中 | Makefile 封装 + uv/pnpm 自动安装脚本；提供 Docker 规避双栈 |
-| Chroma 嵌入式稳定性 | 偶发索引损坏 | 低 | 启动时校验 + 重建索引机制；数据卷备份提示 |
+| 简历解析准确率不达标 | 冷启动体验差 | 中 | 多解析器兜底，人工确认机制 |
+| LLM 生成套话率高 | 生成内容不可用 | 中 | 反思节点检测 + Prompt 迭代优化，套话率红线 < 15% |
+| LLM API 延迟和成本 | 生成太慢/太贵 | 中 | 流式输出 + 缓存检索结果；支持多家 API 切换 |
+| 模板预览与 PDF 不一致 | 所见非所得 | 中 | 统一渲染引擎，预览用 reportlab SVG 导出 |
+| 智能补全推荐质量低 | 用户忽略建议 | 中 | 基于 Gap 报告精准定位，限制建议数量 ≤ 3 |
+| Chroma 大规模性能 | 1000+ 切片检索变慢 | 低 | v1.1 规模（百级）足够，预留 PGVector 方案 |
+| React Flow 复杂交互 | Diff 视图渲染卡顿 | 低 | 节点数 ≤ 50 时无压力 |
+| MinerU API 可用性 | JD 分析不可用 | 低 | 缓存解析结果，API 宕机时降级为手动输入 |
 
 ### Key Dependencies
 
-- **LLM API 可用性**：核心功能依赖云端 LLM，API 宕机时生成功能不可用（展示类功能仍可用）
-- **PyMuPDF / python-docx**：简历解析的底层依赖，需持续维护兼容性
-- **React Flow**：版本树画布的唯一依赖，社区活跃度影响长期可维护性
+- **LLM API 可用性**：核心功能依赖云端 LLM，API 宕机时展示类功能仍可用
+- **MinerU API**：JD 截图 OCR 依赖，有免费额度，API 宕机时降级为手动输入 JD
+- **Chroma 嵌入式**：向量检索底层依赖，需持续维护稳定性
+- **reportlab**：PDF 生成唯一依赖，成熟稳定
 
 ---
 
@@ -446,16 +347,26 @@ resume-agent/
 
 ### 现有设计稿映射
 
-| 设计稿文件 | 对应功能 | MVP 使用情况 |
-|-----------|----------|-------------|
-| `pages/workspace.html` | 三栏工作台主界面 | ✅ 直接参考 |
-| `pages/overview.html` | 总览面板（统计+活动+图表） | ❌ 不在 MVP |
-| `pages/knowledge-base.html` | 知识库管理界面 | ✅ 参考 |
-| `pages/job-analysis.html` | JD 截图分析界面 | ✅ 参考 |
-| `pages/skill-gap.html` | 技能差距分析界面 | ✅ 参考 |
-| `pages/timeline.html` | 投递时间线 | ❌ 不在 MVP |
-| `colors_and_type.css` | 设计令牌系统 | ✅ 直接复用 |
+| 设计稿文件 | 对应功能 | 使用情况 |
+|-----------|----------|----------|
+| `pages/workspace.html` | 三栏工作台主界面 | ✅ 已实现 |
+| `pages/knowledge-base.html` | 知识库管理界面 | ✅ 已实现 |
+| `pages/job-analysis.html` | JD 截图分析界面 | ✅ 已实现 |
+| `pages/skill-gap.html` | 技能差距分析界面 | ✅ 已实现 |
+| `pages/overview.html` | 总览面板（统计+活动+图表） | 📋 v1.2 |
+| `pages/timeline.html` | 投递时间线 | 📋 v1.2 |
 
 ### 关于「AI 审核经历真实性」的说明
 
-需求文档原提到「AI 面试官 Agent 反思审核经历是否真实」。LLM 无法真正验证经历是否客观发生过，只能检测 AI 套话、前后矛盾与夸大表述。PRD 中「反思 Agent」应理解为「检测套话与一致性」，避免对用户过度承诺。
+LLM 无法真正验证经历是否客观发生过，只能检测 AI 套话、前后矛盾与夸大表述。「反思节点」应理解为「检测套话与一致性」，避免对用户过度承诺。
+
+### v1.0 → v1.1 变更摘要
+
+- **更新**：技术栈表修正为实际实现（移除 LangGraph/GPT-4o Vision/React-pdf，加入 MinerU/reportlab/函数链）
+- **更新**：架构图移除 LangGraph，新增 MinerU OCR + reportlab
+- **新增**：US-8 简历预览与模板系统
+- **新增**：US-9 AI 智能补全
+- **新增**：US-10 版本 Diff 对比
+- **新增**：US-11 AI 导师学习建议
+- **更新**：路线图标记 v1.0 已完成
+- **更新**：风险表移除 LangGraph 相关风险，新增模板/补全相关风险
