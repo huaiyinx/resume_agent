@@ -12,7 +12,7 @@
 git clone https://github.com/DeLightor/resume_agent.git
 cd resume_agent
 cp .env.example .env
-# 编辑 .env 填入 LLM_API_KEY
+# 编辑 .env 填入 LLM_API_KEY 和 MINERU_API_TOKEN
 docker compose up
 ```
 
@@ -41,14 +41,65 @@ make dev        # 启动开发服务器
 | uv | latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | Docker | ≥ 24（可选） | [docker.com](https://docker.com/) |
 
+## 配置
+
+复制 `.env.example` 为 `.env` 并填入以下配置：
+
+### LLM 配置（必需）
+
+```bash
+LLM_PROVIDER=deepseek              # openai / deepseek / custom
+LLM_API_KEY=sk-xxxxxxxx             # API Key
+LLM_BASE_URL=https://api.deepseek.com  # OpenAI 兼容端点
+LLM_MODEL=deepseek-chat             # 模型名
+```
+
+支持任何 OpenAI 协议兼容的 LLM 服务（DeepSeek、OpenAI、Moonshot、本地 Ollama 等）。
+
+### MinerU 配置（JD 截图分析，可选）
+
+```bash
+MINERU_API_TOKEN=                   # 在 https://mineru.net/apiManage 获取
+MINERU_API_BASE=https://mineru.net
+```
+
+MinerU 提供云端文档解析 API，用于 JD 截图 OCR。有免费额度，无需自建部署。
+
+### Embedding 配置
+
+知识库向量检索使用 Chroma 内置的 `all-MiniLM-L6-v2` 本地模型，无需额外配置 API Key，开箱即用。
+
+### 数据存储
+
+```bash
+RESUME_AGENT_HOME=~/.resume-agent
+SQLITE_PATH=~/.resume-agent/data.db
+CHROMA_PATH=~/.resume-agent/chroma
+FILES_ROOT=~/.resume-agent/files
+```
+
 ## 技术栈
 
 | 层 | 技术 |
 |----|------|
 | 前端 | React 18 + Vite + TypeScript + Tailwind CSS v4 + React Flow v12 |
-| 后端 | Python 3.12 + FastAPI + LangGraph |
-| 数据库 | SQLite（元数据）+ Chroma（向量库，嵌入式） |
+| 后端 | Python 3.12 + FastAPI + uvicorn |
+| 数据库 | SQLite（元数据）+ Chroma（向量库，嵌入式，all-MiniLM-L6-v2） |
+| LLM | DeepSeek / OpenAI 兼容协议（结构化提取、反思审核、简历生成） |
+| OCR | MinerU 云端 API（JD 截图解析，支持 PDF/图片/DOCX） |
+| PDF | reportlab（ATS 友好，文本可选可解析，CJK 字体支持） |
 | 部署 | Docker Compose 单容器 |
+
+## 功能概览
+
+| 功能 | 说明 |
+|------|------|
+| 版本树管理 | Git 式树状画布，主干 → 方向分支 → 公司节点 |
+| 知识库 RAG | 上传文档 → 自动分块 → 向量索引 → 语义检索 |
+| JD 截图分析 | 多文件上传（截图/PDF/TXT）→ MinerU OCR → LLM 结构化提取 → 自动去重 |
+| 技能 Gap 报告 | JD 技能 vs 知识库 → 向量相似度三色判定（已覆盖/部分缺口/未涉及） |
+| AI 简历生成 | 检索 → 反思审核 → 撰写润色（3 步工作流，不依赖 LangGraph） |
+| PDF 导出 | ATS 友好模板，文本可选可解析，支持中文 |
 
 ## 项目结构
 
@@ -56,24 +107,23 @@ make dev        # 启动开发服务器
 resume-agent/
 ├── backend/              # Python 后端
 │   ├── src/resume_agent/
-│   │   ├── api/          # FastAPI 路由
+│   │   ├── api/          # FastAPI 路由（tree/knowledge/jd/gap_report/generate/export）
 │   │   ├── db/           # SQLite + 建表脚本
-│   │   ├── rag/          # Chroma 向量库
-│   │   ├── parsers/      # 简历解析（骨架）
-│   │   ├── agents/       # LangGraph 工作流（骨架）
+│   │   ├── rag/           # Chroma 向量库 + 文本分块
+│   │   ├── parsers/      # MinerU 文档解析客户端
+│   │   ├── llm/           # 统一 LLM 客户端（OpenAI/DeepSeek）
+│   │   ├── export/       # PDF 生成（reportlab）
 │   │   ├── config.py     # 环境变量配置
 │   │   └── main.py       # FastAPI 入口
-│   └── tests/
+│   └── tests/            # pytest 测试（150+ tests）
 ├── frontend/             # React 前端
 │   ├── src/
-│   │   ├── components/   # 组件（layout / tree / common）
-│   │   ├── routes/       # 路由页面
+│   │   ├── components/   # 组件（layout/tree/knowledge/jd/gap/generate）
+│   │   ├── lib/          # API 封装
 │   │   ├── styles/       # 设计令牌 + Tailwind
-│   │   ├── data/         # mock 数据
 │   │   └── types/        # TypeScript 类型
 │   └── vite.config.ts
 ├── openspec/             # 规格文档
-├── docs/                 # 文档
 ├── docker-compose.yml
 ├── Dockerfile
 ├── Makefile
@@ -99,8 +149,8 @@ make docker-up     # Docker 启动
 ```
 ~/.resume-agent/
 ├── data.db          # SQLite 元数据（版本树、上传记录）
-├── chroma/          # Chroma 向量索引
-└── files/           # 上传的原始文件
+├── chroma/          # Chroma 向量索引（all-MiniLM-L6-v2）
+└── files/           # 上传的原始文件 + 导出的 PDF
 ```
 
 ## License

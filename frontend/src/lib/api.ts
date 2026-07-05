@@ -252,3 +252,41 @@ export async function generateResume(
     gap_report: gapReport ?? null,
   });
 }
+
+// ===== PDF 导出 API（US-7）=====
+
+/**
+ * 导出简历为 PDF。
+ * POST /api/export/pdf，返回 PDF 文件（Blob）。
+ *
+ * 注意：此 API 返回的是二进制文件（application/pdf），不是标准 JSON envelope，
+ * 因此不能用 apiRequest 封装，需要直接用 fetch 并以 blob 方式接收。
+ */
+export async function exportResumePDF(
+  resumeData: Record<string, unknown>,
+  jobTitle?: string,
+  company?: string,
+): Promise<Blob> {
+  const response = await fetch(`${BASE_URL}/export/pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      resume_data: resumeData,
+      job_title: jobTitle ?? '',
+      company: company ?? '',
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`导出失败: HTTP ${response.status}`);
+  }
+
+  // 检查是否是错误 JSON 响应（后端错误时返回 JSON）
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) {
+    const errorData = await response.json();
+    throw new Error(errorData?.error?.message ?? '导出失败');
+  }
+
+  return response.blob();
+}

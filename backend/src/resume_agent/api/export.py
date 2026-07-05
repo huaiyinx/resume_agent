@@ -1,17 +1,22 @@
-"""PDF 导出端点（桩实现）。
+"""PDF 导出端点（US-7）。
 
-将指定简历节点导出为 PDF。
+接收 AI 生成结果（experience / projects / skills），渲染为 ATS 友好 PDF。
+使用 reportlab 生成文本可选、可解析的 PDF。
 """
 
 from __future__ import annotations
 
+import logging
 import uuid
 from typing import Any
 
 from fastapi import APIRouter
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from resume_agent.api.response import success
+from resume_agent.api.response import error
+
+logger = logging.getLogger("resume_agent")
 
 router = APIRouter(prefix="/export", tags=["export"])
 
@@ -19,25 +24,48 @@ router = APIRouter(prefix="/export", tags=["export"])
 class ExportRequest(BaseModel):
     """PDF 导出请求体。"""
 
-    resume_node_id: str
-    template: str = "modern"  # modern / classic / minimal
+    resume_data: dict[str, Any]
+    job_title: str = ""
+    company: str = ""
 
 
 @router.post("/pdf")
-def export_pdf(req: ExportRequest) -> dict[str, Any]:
-    """导出简历为 PDF（桩实现）。
+async def export_pdf(req: ExportRequest) -> Any:
+    """导出简历为 PDF。
+
+    接收 AI 生成结果，渲染为 ATS 友好 PDF 文件并返回。
 
     Args:
-        req: 导出请求，含简历节点 ID 与模板名。
+        req: 导出请求，含简历数据和目标岗位信息。
 
     Returns:
-        统一响应 envelope，``data`` 为 mock 导出结果。
+        PDF 文件响应（application/pdf）。
     """
-    mock_export = {
-        "export_id": str(uuid.uuid4()),
-        "resume_node_id": req.resume_node_id,
-        "template": req.template,
-        "file_path": f"files/exports/{uuid.uuid4()}.pdf",
-        "status": "completed",
-    }
-    return success(mock_export)
+    from resume_agent.config import settings
+    from resume_agent.export.pdf_builder import build_pdf
+
+    if not req.resume_data:
+        return error("INVALID_REQUEST", "resume_data 不能为空")
+
+    try:
+        pdf_bytes = build_pdf(
+            resume_data=req.resume_data,
+            job_title=req.job_title,
+            company=req.company,
+        )
+    except Exception as exc:
+        logger.exception("PDF 生成失败")
+        return error("EXPORT_FAILED", f"PDF 生成失败: {exc}")
+
+    # 保存到临时文件
+    export_dir = settings.files_root / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"resume_{uuid.uuid4().hex[:8]}.pdf"
+    file_path = export_dir / filename
+    file_path.write_bytes(pdf_bytes)
+
+    return FileResponse(
+        path=str(file_path),
+        media_type="application/pdf",
+        filename=f"resume_{req.job_title or 'export'}.pdf",
+    )

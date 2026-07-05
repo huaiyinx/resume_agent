@@ -3,7 +3,7 @@
 // 检索 → 反思 → 撰写 3 步工作流
 
 import { useState } from 'react';
-import { generateResume } from '@/lib/api';
+import { exportResumePDF, generateResume } from '@/lib/api';
 import type { GenerateResult } from '@/types/generate';
 
 interface GenerateViewProps {
@@ -28,6 +28,7 @@ export default function GenerateView({ structuredJD, gapReport }: GenerateViewPr
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [exporting, setExporting] = useState(false);
 
   async function handleGenerate() {
     if (!structuredJD || status === 'loading') return;
@@ -50,6 +51,44 @@ export default function GenerateView({ structuredJD, gapReport }: GenerateViewPr
       setErrorMsg(err instanceof Error ? err.message : '生成失败');
     } finally {
       clearInterval(stepTimer);
+    }
+  }
+
+  // 导出 PDF（US-7）
+  async function handleExportPDF() {
+    if (!result || exporting) return;
+
+    setExporting(true);
+    setErrorMsg(null);
+    try {
+      // 构造简历数据
+      const resumeData: Record<string, unknown> = {
+        name: '我的简历',
+        ...result.content,
+      };
+
+      // 从 structuredJD 获取目标岗位
+      const jobTitle =
+        (structuredJD as Record<string, unknown>)?.job_title as string ?? '';
+      const company =
+        (structuredJD as Record<string, unknown>)?.company as string ?? '';
+
+      const blob = await exportResumePDF(resumeData, jobTitle, company);
+
+      // 触发浏览器下载
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `resume_${jobTitle || 'export'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : '导出失败');
+      console.error('PDF 导出失败:', err);
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -170,13 +209,27 @@ export default function GenerateView({ structuredJD, gapReport }: GenerateViewPr
           {/* 内容展示 */}
           <GenerateContent section={result.section} content={result.content} />
 
-          {/* 重新生成 */}
-          <button
-            onClick={handleGenerate}
-            className="w-full text-xs px-3 py-1.5 rounded-md border border-border-default text-text-secondary bg-bg-elevated cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all"
-          >
-            重新生成
-          </button>
+          {/* 导出错误提示 */}
+          {errorMsg && (
+            <div className="text-xs text-error">{errorMsg}</div>
+          )}
+
+          {/* 导出 + 重新生成按钮 */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleExportPDF}
+              disabled={exporting}
+              className="flex-1 text-xs px-3 py-1.5 rounded-md bg-brand-primary text-white font-medium cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? '导出中...' : '导出 PDF'}
+            </button>
+            <button
+              onClick={handleGenerate}
+              className="flex-1 text-xs px-3 py-1.5 rounded-md border border-border-default text-text-secondary bg-bg-elevated cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all"
+            >
+              重新生成
+            </button>
+          </div>
         </div>
       )}
     </div>

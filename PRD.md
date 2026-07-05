@@ -118,10 +118,10 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 **As a** 求职者，**I want** 一键导出 ATS 友好的 PDF，**so that** 我能直接用于投递。
 
 **Acceptance Criteria：**
-- [ ] 至少 1 套 ATS 友好模板（经典学术 / 大厂技术 / 极简风，MVP 至少 1 套）
-- [ ] JSON-to-Resume 数据与排版分离
-- [ ] PDF 文本可选、可解析（通过 ATS 系统解析测试）
-- [ ] 导出延迟 ≤ 3s
+- [x] 至少 1 套 ATS 友好模板（经典学术 / 大厂技术 / 极简风，MVP 至少 1 套）
+- [x] JSON-to-Resume 数据与排版分离
+- [x] PDF 文本可选、可解析（通过 ATS 系统解析测试）
+- [x] 导出延迟 ≤ 3s
 - [ ] PDF 预览区实时同步
 
 ### Non-Goals
