@@ -2,26 +2,13 @@
 // 右栏：JD 分析卡片 + Gap 报告列表 + AI 生成预览区（空状态）
 // US-4：JD 分析区域接入真实后端（analyzeJD），无结果时显示 JDUploadZone，
 //       有结果时显示 JDCard + "重新分析"按钮。
+// US-5：Gap 报告区域接入 GapReportView（基于 JD 结构化数据 + 知识库语义比对）。
 
 import { useState } from 'react';
 import JDUploadZone from '@/components/jd/JDUploadZone';
 import JDCard from '@/components/jd/JDCard';
+import GapReportView from '@/components/gap/GapReportView';
 import type { JDAnalysisResult } from '@/types/jd';
-
-const GAP_ITEMS = [
-  { name: 'C++ 底层', desc: '精通内存管理、模板编程', status: 'covered' },
-  { name: '漏洞挖掘', desc: 'fuzzing 工具使用, 0day 发现流程', status: 'partial' },
-  { name: 'x86 汇编', desc: '指令集熟练阅读与调试', status: 'covered' },
-  { name: '逆向工程', desc: 'IDA Pro, Ghidra 等工具链', status: 'partial' },
-  { name: 'Python 安全', desc: '安全自动化脚本开发', status: 'covered' },
-  { name: 'ARM 汇编', desc: '移动端漏洞分析', status: 'missing' },
-] as const;
-
-const GAP_BADGE: Record<string, { label: string; cls: string }> = {
-  covered: { label: '已覆盖', cls: 'bg-[rgba(5,150,105,0.08)] text-success' },
-  partial: { label: '部分缺口', cls: 'bg-[rgba(217,119,6,0.08)] text-warning' },
-  missing: { label: '未涉及', cls: 'bg-[rgba(220,38,38,0.08)] text-error' },
-};
 
 export default function RightPanel() {
   // JD 分析结果（US-4）：null 时显示上传区，非 null 时显示 JDCard
@@ -92,33 +79,10 @@ export default function RightPanel() {
           </svg>
           知识盲区报告
         </div>
-
-        {GAP_ITEMS.map((item) => {
-          const badge = GAP_BADGE[item.status];
-          return (
-            <div
-              key={item.name}
-              className="flex items-start gap-2 py-2 border-b border-border-subtle last:border-b-0"
-            >
-              <div className="flex-1">
-                <div className="text-sm font-medium text-text-primary min-w-[90px]">
-                  {item.name}
-                </div>
-                <div className="text-xs text-text-tertiary leading-tight">
-                  {item.desc}
-                </div>
-              </div>
-              <span
-                className={`text-[10px] px-2 py-px rounded-full font-medium whitespace-nowrap flex-shrink-0 ${badge.cls}`}
-              >
-                {badge.label}
-              </span>
-            </div>
-          );
-        })}
+        <GapReportView structuredJD={(jdResult?.structured ?? null) as Record<string, unknown> | null} />
       </section>
 
-      {/* Section 3: AI 生成预览区（空状态） */}
+      {/* Section 3: AI 生成预览区（空状态，US-6 实现） */}
       <section className="p-4">
         <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-text-primary">
           <svg
@@ -138,39 +102,8 @@ export default function RightPanel() {
         </div>
 
         <div className="bg-bg-tertiary rounded-lg p-4 border border-border-subtle">
-          <div className="text-sm text-text-secondary leading-snug mb-3">
-            针对该岗位分析，你的核心技术栈匹配度约{' '}
-            <strong className="text-brand-primary">72%</strong>
-            。主要差距集中在漏洞挖掘实战经验和 ARM 汇编方向。建议优先补充这两个领域的项目经历。
-          </div>
-
-          <div className="text-sm font-semibold text-text-primary mb-2">
-            面试前补充建议
-          </div>
-          {[
-            '完成 2-3 个真实漏洞复现实验 (CVE 复现), 整理 writeup 放入知识库',
-            '学习 ARM 基础指令集, 完成 one CTF ARM PWN 题',
-            '准备 1-2 个安全工具开发项目案例, 体现工程能力',
-          ].map((tip) => (
-            <div
-              key={tip}
-              className="flex items-start gap-2 text-xs text-text-secondary mb-1.5 leading-snug"
-            >
-              <div className="w-1 h-1 rounded-full bg-brand-primary flex-shrink-0 mt-1.5" />
-              <span>{tip}</span>
-            </div>
-          ))}
-
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {['OWASP Top 10 实战项目', 'CTFtime PWN 入门', 'AFL++ Fuzzing 教程'].map((link) => (
-              <a
-                key={link}
-                href="#"
-                className="text-xs px-3 py-1 bg-bg-elevated text-brand-primary border border-brand-primary-muted rounded-full cursor-pointer transition-all hover:bg-brand-primary-muted no-underline"
-              >
-                {link}
-              </a>
-            ))}
+          <div className="text-xs text-text-muted text-center">
+            Gap 报告生成后，可一键生成专属简历（US-6）
           </div>
         </div>
       </section>

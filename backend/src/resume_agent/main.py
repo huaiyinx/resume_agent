@@ -21,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from resume_agent.api.gap_report import router as gap_report_router
 from resume_agent.api.router import api_router
 from resume_agent.config import settings
 from resume_agent.db.init_db import init_database
@@ -75,6 +76,8 @@ def create_app() -> FastAPI:
     )
 
     # API 路由
+    # 先注册 gap_report 路由，使其优先于 api_router 中的 gap 桩实现
+    app.include_router(gap_report_router, prefix="/api")
     app.include_router(api_router, prefix="/api")
 
     # 静态文件托管前端 build 产物（生产态）

@@ -20,6 +20,7 @@ import type {
   SearchResponse,
 } from '@/types/knowledge';
 import type { JDAnalysisResult } from '@/types/jd';
+import type { GapReport } from '@/types/gap';
 
 const BASE_URL = '/api';
 
@@ -219,4 +220,16 @@ export async function analyzeJD(files: File[]): Promise<JDAnalysisResult> {
   const formData = new FormData();
   files.forEach((f) => formData.append('files', f));
   return api.upload<JDAnalysisResult>('/jd/analyze', formData);
+}
+
+// ===== Gap 报告 API（US-5）=====
+
+/**
+ * 生成技能 Gap 报告。
+ * POST /api/gap-report，传入 JD 结构化数据，返回三色状态报告。
+ */
+export async function generateGapReport(
+  structuredJD: Record<string, unknown>,
+): Promise<GapReport> {
+  return api.post<GapReport>('/gap-report', { structured_jd: structuredJD });
 }
