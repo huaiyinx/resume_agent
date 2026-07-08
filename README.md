@@ -121,13 +121,23 @@ FILES_ROOT=~/.resume-agent/files
 | 版本 Diff 对比 | 字段级 diff（experience/projects/skills），结构化卡片渲染，新增/删除/修改高亮 |
 | AI 导师学习建议 | Tavily Web 搜索 + 并行 LLM 调用，学习路径（概念→实践→验证）+ 真实资源链接 + 状态标记 |
 
+### v1.2 简历精调与模板
+
+| 功能 | 说明 |
+|------|------|
+| 个人信息管理 | 左栏知识库表单，联系方式/教育背景/自我评价，节点继承，知识库提取 |
+| 段落可排序 | 拖拽调整 8 段落顺序，显示/隐藏切换，实时预览刷新 |
+| 一键生成整份简历 | asyncio.gather 并行生成，JD 驱动，单段可重生成 |
+| 信息完整性检测 | 0-100 评分 + 8 项检查清单，缺失字段高亮，可编辑预览（内联编辑 + 增删条目） |
+| 6 套模板系统 | modern/classic/tech/minimal/暖橙卡片风/academic，配置化 TemplateConfig，半透明圆角背景框 |
+
 ## 项目结构
 
 ```
 resume-agent/
 ├── backend/              # Python 后端
 │   ├── src/resume_agent/
-│   │   ├── api/          # FastAPI 路由（tree/knowledge/jd/gap_report/generate/export/diff/suggest/tutor/templates）
+│   │   ├── api/          # FastAPI 路由（tree/knowledge/jd/gap_report/generate/export/diff/suggest/tutor/templates/completeness）
 │   │   ├── db/           # SQLite + 建表脚本
 │   │   ├── rag/          # Chroma 向量库 + 文本分块
 │   │   ├── parsers/      # MinerU 文档解析客户端
@@ -136,7 +146,7 @@ resume-agent/
 │   │   ├── export/       # PDF 生成（reportlab，多模板）
 │   │   ├── config.py     # 环境变量配置
 │   │   └── main.py       # FastAPI 入口
-│   └── tests/            # pytest 测试（170+ tests）
+│   └── tests/            # pytest 测试（42 tests）
 ├── frontend/             # React 前端
 │   ├── src/
 │   │   ├── components/   # 组件（layout/tree/knowledge/jd/gap/generate/diff/tutor/template）
