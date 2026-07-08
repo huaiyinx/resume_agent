@@ -49,7 +49,9 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        # 从项目根目录和 backend/ 目录都查找 .env
+        # 后端 cwd 通常在 backend/，.env 在项目根目录（上一级）
+        env_file=["../.env", ".env"],
         env_prefix="",
         env_file_encoding="utf-8",
         extra="ignore",
