@@ -99,12 +99,16 @@ if ($uvCmd) {
 $DockerAvailable = $false
 $dockerCmd = Get-Command docker -ErrorAction SilentlyContinue
 if ($dockerCmd) {
-    $dockerCheck = docker info 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $dockerVersion = (docker --version) -replace 'Docker version ', '' -replace ',.*', ''
-        Write-OkMsg "Docker v$dockerVersion (available)"
-        $DockerAvailable = $true
-    } else {
+    try {
+        $null = docker info 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $dockerVersion = (docker --version) -replace 'Docker version ', '' -replace ',.*', ''
+            Write-OkMsg "Docker v$dockerVersion (available)"
+            $DockerAvailable = $true
+        } else {
+            Write-WarnMsg "Docker installed but not running"
+        }
+    } catch {
         Write-WarnMsg "Docker installed but not running"
     }
 } else {
