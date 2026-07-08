@@ -251,9 +251,12 @@ if (-not $SkipConfig) {
 
     $baseUrl = Read-Host "LLM Base URL (default: $defaultUrl)"
     if ([string]::IsNullOrWhiteSpace($baseUrl)) { $baseUrl = $defaultUrl }
+    # Remove any backticks that PowerShell may have introduced
+    $baseUrl = $baseUrl -replace '`', ''
 
     $model = Read-Host "LLM Model (default: $defaultModel)"
     if ([string]::IsNullOrWhiteSpace($model)) { $model = $defaultModel }
+    $model = $model -replace '`', ''
 
     # MinerU API Token
     Write-Host ""
@@ -261,6 +264,7 @@ if (-not $SkipConfig) {
     Write-Host "  Get token: https://mineru.net/apiManage" -ForegroundColor Cyan
     Write-Host ""
     $mineruToken = Read-Host "MinerU API Token (Enter to skip, edit .env later)"
+    $mineruToken = $mineruToken -replace '`', ''
 
     # Write .env file from scratch (ASCII only, no Chinese comments to avoid encoding issues)
     $envContent = @"
