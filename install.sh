@@ -255,6 +255,23 @@ if [ "${SKIP_CONFIG:-false}" != "true" ]; then
 
     success "LLM 配置已写入 .env"
     echo ""
+
+    # MinerU API Token
+    echo -e "${CYAN}MinerU 是简历解析的核心依赖，需要配置 API Token。${NC}"
+    echo -e "  获取地址: ${CYAN}https://mineru.net/apiManage${NC}"
+    echo ""
+    read -rp "MinerU API Token (回车跳过，稍后编辑 .env): " INPUT_MINERU
+    if [ -n "$INPUT_MINERU" ]; then
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|^MINERU_API_TOKEN=.*|MINERU_API_TOKEN=$INPUT_MINERU|" "$ENV_FILE"
+        else
+            sed -i "s|^MINERU_API_TOKEN=.*|MINERU_API_TOKEN=$INPUT_MINERU|" "$ENV_FILE"
+        fi
+        success "MinerU Token 已写入 .env"
+    else
+        warn "MinerU Token 未配置，简历解析功能将无法使用。稍后编辑 .env 填入"
+    fi
+    echo ""
 fi
 
 # ============================================

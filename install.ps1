@@ -255,6 +255,21 @@ if (-not $SkipConfig) {
 
     Write-OkMsg "LLM config saved to .env"
     Write-Host ""
+
+    # MinerU API Token
+    Write-Host "MinerU is required for resume parsing." -ForegroundColor Cyan
+    Write-Host "  Get token: https://mineru.net/apiManage" -ForegroundColor Cyan
+    Write-Host ""
+    $mineruToken = Read-Host "MinerU API Token (Enter to skip, edit .env later)"
+    if (-not [string]::IsNullOrWhiteSpace($mineruToken)) {
+        $envContent = Get-Content $EnvFile -Raw
+        $envContent = $envContent -replace '^MINERU_API_TOKEN=.*', "MINERU_API_TOKEN=$mineruToken"
+        $envContent | Set-Content $EnvFile -NoNewline
+        Write-OkMsg "MinerU Token saved to .env"
+    } else {
+        Write-WarnMsg "MinerU Token not set, resume parsing will not work. Edit .env later."
+    }
+    Write-Host ""
 }
 
 # ============================================
