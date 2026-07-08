@@ -40,19 +40,6 @@ function Invoke-Install {
 function Invoke-Dev {
     Write-Host ">>> Starting dev servers..." -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Opening two windows: backend + frontend" -ForegroundColor Cyan
-    Write-Host "Close both windows to stop." -ForegroundColor Yellow
-    Write-Host ""
-
-    # Open backend in new window
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
-`$ErrorActionPreference = 'Stop'
-Set-Location '$ScriptDir\backend'
-`$env:PYTHONHOME = `$null
-`$env:PYTHONPATH = `$null
-Write-Host 'Backend: http://localhost:8000' -ForegroundColor Green
-uv run uvicorn resume_agent.main:app --reload --port 8000
-"@
 
     # Open frontend in new window
     Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
@@ -62,10 +49,16 @@ Write-Host 'Frontend: http://localhost:5173' -ForegroundColor Green
 & ".\node_modules\.bin\vite"
 "@
 
-    Write-Host "Backend:  http://localhost:8000" -ForegroundColor Green
-    Write-Host "Frontend: http://localhost:5173" -ForegroundColor Green
+    Write-Host "Frontend started in new window: http://localhost:5173" -ForegroundColor Green
+    Write-Host "Backend starting in this window: http://localhost:8000" -ForegroundColor Green
+    Write-Host "Press Ctrl+C to stop backend." -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Both servers started in new windows." -ForegroundColor Cyan
+
+    # Run backend in current window (so errors are visible)
+    Set-Location "$ScriptDir\backend"
+    $env:PYTHONHOME = $null
+    $env:PYTHONPATH = $null
+    uv run uvicorn resume_agent.main:app --reload --port 8000
 }
 
 function Invoke-Build {
