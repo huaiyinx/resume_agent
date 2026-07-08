@@ -54,8 +54,19 @@ make dev        # 启动开发服务器
 ### Windows
 
 ```powershell
+# 一键安装
 powershell -ExecutionPolicy Bypass -File install.ps1
+
+# 日常开发命令（Makefile.ps1 等效 macOS Makefile）
+.\Makefile.ps1 install    # 安装依赖
+.\Makefile.ps1 dev        # 启动开发服务器
+.\Makefile.ps1 test       # 运行测试
+.\Makefile.ps1 build      # 构建前端
+.\Makefile.ps1 lint       # 代码检查
+.\Makefile.ps1 clean      # 清理构建产物
 ```
+
+Windows 数据存储路径：`%USERPROFILE%\.resume-agent\`（自动创建）
 
 ### Docker 一键启动（无需上述依赖）
 
