@@ -37,7 +37,7 @@ make dev        # 启动开发服务器
 |------|------|----------|
 | Node.js | ≥ 20 | [nodejs.org](https://nodejs.org/) |
 | pnpm | ≥ 9 | `npm install -g pnpm` |
-| Python | ≥ 3.12 | [python.org](https://python.org/) |
+| Python | ≥ 3.10 | [python.org](https://python.org/) |
 | uv | latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | Docker | ≥ 24（可选） | [docker.com](https://docker.com/) |
 

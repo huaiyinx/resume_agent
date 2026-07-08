@@ -74,10 +74,10 @@ if ($pyCmd) {
     $pyParts = $pyVersion -split '\.'
     $pyMajor = [int]$pyParts[0]
     $pyMinor = [int]$pyParts[1]
-    if ($pyMajor -eq 3 -and $pyMinor -ge 12) {
+    if ($pyMajor -eq 3 -and $pyMinor -ge 10) {
         Write-OkMsg "Python $pyVersion"
     } else {
-        Write-WarnMsg "Python $pyVersion (need >= 3.12)"
+        Write-WarnMsg "Python $pyVersion (need >= 3.10)"
         $Missing += "python"
     }
 } else {
@@ -133,7 +133,7 @@ if ($Missing.Count -gt 0) {
                 Write-Host "    Or:       corepack enable" -ForegroundColor Cyan
             }
             "python" {
-                Write-Host "  Python >= 3.12" -ForegroundColor Yellow
+                Write-Host "  Python >= 3.10" -ForegroundColor Yellow
                 Write-Host "    Download: https://www.python.org/downloads/" -ForegroundColor Cyan
                 Write-Host "    Or:       winget install Python.Python.3.12" -ForegroundColor Cyan
             }

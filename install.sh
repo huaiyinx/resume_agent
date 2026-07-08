@@ -71,10 +71,10 @@ if command -v python3 &>/dev/null; then
     PY_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
     PY_MAJOR=$(echo "$PY_VERSION" | cut -d. -f1)
     PY_MINOR=$(echo "$PY_VERSION" | cut -d. -f2)
-    if [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -ge 12 ]; then
+    if [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -ge 10 ]; then
         success "Python $PY_VERSION"
     else
-        warn "Python $PY_VERSION (需要 >= 3.12)"
+        warn "Python $PY_VERSION (需要 >= 3.10)"
         MISSING+=("python")
     fi
 else
@@ -123,7 +123,7 @@ if [ ${#MISSING[@]} -gt 0 ]; then
                 echo -e "    或:     ${CYAN}corepack enable && corepack prepare pnpm@latest --activate${NC}"
                 ;;
             python)
-                echo -e "  ${YELLOW}Python >= 3.12${NC}"
+                echo -e "  ${YELLOW}Python >= 3.10${NC}"
                 echo -e "    macOS:  ${CYAN}brew install python@3.12${NC}"
                 echo -e "    Linux:  参考 https://www.python.org/downloads/${NC}"
                 ;;
