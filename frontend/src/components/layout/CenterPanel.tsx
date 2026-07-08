@@ -13,7 +13,7 @@ import KnowledgeView from '@/components/knowledge/KnowledgeView';
 import TemplateSelector from '@/components/template/TemplateSelector';
 import ResumePreview from '@/components/template/ResumePreview';
 import DiffView from '@/components/diff/DiffView';
-import { getTemplates, deleteNode } from '@/lib/api';
+import { getTemplates, getTree, deleteNode } from '@/lib/api';
 import type { ResumeNode, TreeData } from '@/types/tree';
 import type { ActiveView } from '@/types/knowledge';
 import type { TemplateInfo } from '@/types/template';
@@ -48,6 +48,8 @@ interface CenterPanelProps {
   onTreeNodesUpdate?: (nodes: ResumeNode[]) => void;
   /** US-12：选中节点变化时通知 MainLayout（传给左栏 PersonalInfoForm） */
   onNodeSelect?: (nodeId: string | null) => void;
+  /** US-13：section_order 更新版本号，变化时重新拉取选中节点数据 */
+  sectionOrderVersion?: number;
 }
 
 /**
@@ -79,6 +81,7 @@ export default function CenterPanel({
   onTemplateSelect,
   onTreeNodesUpdate,
   onNodeSelect,
+  sectionOrderVersion = 0,
 }: CenterPanelProps) {
   const [activeTab, setActiveTab] = useState<string>('版本树');
   const [selectedNode, setSelectedNode] = useState<ResumeNode | null>(null);
@@ -109,6 +112,15 @@ export default function CenterPanel({
     setSelectedNode(node);
     onNodeSelect?.(node.node_id);
   }, [onNodeSelect]);
+
+  // US-13: section_order 更新后重新拉取选中节点的 content_json
+  useEffect(() => {
+    if (sectionOrderVersion === 0 || !selectedNode) return;
+    getTree().then((data) => {
+      const updated = data.nodes.find((n) => n.node_id === selectedNode.node_id);
+      if (updated) setSelectedNode(updated);
+    });
+  }, [sectionOrderVersion]);
 
   const handleTreeLoad = useCallback((data: TreeData) => {
     setTree(data);

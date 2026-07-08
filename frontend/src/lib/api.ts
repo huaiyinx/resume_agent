@@ -27,6 +27,7 @@ import type { TemplateInfo } from '@/types/template';
 import type { DiffResult } from '@/types/diff';
 import type { TutorResult } from '@/types/tutor';
 import type { PersonalInfo } from '@/types/personal';
+import type { SectionItem } from '@/types/section';
 
 const BASE_URL = '/api';
 
@@ -399,4 +400,22 @@ export async function extractPersonalInfo(): Promise<PersonalInfo> {
     {},
   );
   return result.personal_info;
+}
+
+// ===== 段落排序 API（US-13）=====
+
+/** 获取节点的段落顺序 */
+export async function getSectionOrder(nodeId: string): Promise<SectionItem[]> {
+  const result = await api.get<{ sections: SectionItem[] }>(
+    `/tree/node/${nodeId}/section-order`,
+  );
+  return result.sections;
+}
+
+/** 更新节点的段落顺序 */
+export async function updateSectionOrder(
+  nodeId: string,
+  sections: SectionItem[],
+): Promise<void> {
+  await api.put(`/tree/node/${nodeId}/section-order`, { sections });
 }

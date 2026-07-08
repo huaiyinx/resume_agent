@@ -9,8 +9,10 @@ import { useState } from 'react';
 import UploadZone from '@/components/common/UploadZone';
 import KnowledgeStatus from '@/components/common/KnowledgeStatus';
 import PersonalInfoForm from '@/components/personal/PersonalInfoForm';
+import SectionOrderPanel from '@/components/section/SectionOrderPanel';
 import { uploadKnowledge } from '@/lib/api';
 import type { ActiveView } from '@/types/knowledge';
+import type { SectionItem } from '@/types/section';
 
 /** 导航项：label 为展示文案，view 为对应的中栏视图（可选） */
 interface NavItem {
@@ -88,6 +90,8 @@ interface LeftPanelProps {
   onNavigate?: (view: ActiveView) => void;
   /** 当前选中的版本树节点 ID（US-12 个人信息） */
   selectedNodeId?: string | null;
+  /** US-13: section_order 保存后通知外部更新 selectedNode */
+  onSectionOrderUpdated?: (sections: SectionItem[]) => void;
 }
 
 export default function LeftPanel({
@@ -96,6 +100,7 @@ export default function LeftPanel({
   knowledgeRefreshKey = 0,
   onNavigate,
   selectedNodeId = null,
+  onSectionOrderUpdated,
 }: LeftPanelProps) {
   const [activeNav, setActiveNav] = useState('总览面板');
 
@@ -205,6 +210,9 @@ export default function LeftPanel({
 
       {/* Personal info form (US-12) */}
       <PersonalInfoForm nodeId={selectedNodeId} />
+
+      {/* Section order panel (US-13) */}
+      <SectionOrderPanel nodeId={selectedNodeId} onOrderUpdated={onSectionOrderUpdated} />
 
       {/* Knowledge base status */}
       <KnowledgeStatus refreshKey={knowledgeRefreshKey} />
