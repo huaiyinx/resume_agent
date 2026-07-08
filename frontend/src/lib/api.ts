@@ -402,7 +402,29 @@ export async function extractPersonalInfo(): Promise<PersonalInfo> {
   return result.personal_info;
 }
 
-// ===== 段落排序 API（US-13）=====
+/** US-14: 一键生成整份简历 */
+export async function generateFull(
+  nodeId: string,
+  structuredJd?: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  return api.post<Record<string, unknown>>('/generate/full', {
+    node_id: nodeId,
+    structured_jd: structuredJd,
+  });
+}
+
+/** US-14: 单段重新生成 */
+export async function regenerateSection(
+  nodeId: string,
+  section: string,
+  structuredJd?: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  return api.post<Record<string, unknown>>('/generate/section', {
+    node_id: nodeId,
+    section,
+    structured_jd: structuredJd,
+  });
+}
 
 /** 获取节点的段落顺序 */
 export async function getSectionOrder(nodeId: string): Promise<SectionItem[]> {

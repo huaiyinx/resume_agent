@@ -23,12 +23,15 @@ interface RightPanelProps {
   templateId?: string;
   /** US-10：版本树节点列表，用于"保存到节点"功能 */
   treeNodes?: ResumeNode[];
+  /** US-14: JD 分析成功后通知 MainLayout（用于一键生成） */
+  onJDAnalyzed?: (structuredJD: Record<string, unknown> | null) => void;
 }
 
 export default function RightPanel({
   onResumeGenerated,
   templateId,
   treeNodes,
+  onJDAnalyzed,
 }: RightPanelProps) {
   // JD 分析结果（US-4）：null 时显示上传区，非 null 时显示 JDCard
   const [jdResult, setJdResult] = useState<JDAnalysisResult | null>(null);
@@ -38,11 +41,13 @@ export default function RightPanel({
   function handleJDAnalyzed(result: JDAnalysisResult) {
     setJdResult(result);
     setGapReport(null); // 重新分析 JD 时重置 Gap 报告
+    onJDAnalyzed?.(result.structured ? { ...result.structured } : null);
   }
 
   function handleReset() {
     setJdResult(null);
     setGapReport(null);
+    onJDAnalyzed?.(null);
   }
 
   return (

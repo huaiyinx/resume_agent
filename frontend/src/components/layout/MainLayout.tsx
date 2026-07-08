@@ -31,6 +31,8 @@ export default function MainLayout() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   /** US-13: section_order 更新后通知 CenterPanel 刷新 selectedNode 的 content_json */
   const [sectionOrderVersion, setSectionOrderVersion] = useState(0);
+  /** US-14: JD 分析结果（结构化），用于一键生成 */
+  const [structuredJD, setStructuredJD] = useState<Record<string, unknown> | null>(null);
 
   const handleTreeRefresh = useCallback(() => {
     setTreeRefreshKey((k) => k + 1);
@@ -87,6 +89,7 @@ export default function MainLayout() {
         onTreeNodesUpdate={handleTreeNodesUpdate}
         onNodeSelect={setSelectedNodeId}
         sectionOrderVersion={sectionOrderVersion}
+        structuredJD={structuredJD}
       />
       {/* 右栏始终可见：JD 截图分析 / Gap 报告 / AI 导师均在此栏，
           无需随导航项切换（"职位截图分析"等导航仅影响中栏视图） */}
@@ -95,6 +98,7 @@ export default function MainLayout() {
         onResumeGenerated={handleResumeGenerated}
         templateId={selectedTemplateId}
         treeNodes={treeNodes}
+        onJDAnalyzed={setStructuredJD}
       />
     </div>
   );

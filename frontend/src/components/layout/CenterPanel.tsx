@@ -13,7 +13,7 @@ import KnowledgeView from '@/components/knowledge/KnowledgeView';
 import TemplateSelector from '@/components/template/TemplateSelector';
 import ResumePreview from '@/components/template/ResumePreview';
 import DiffView from '@/components/diff/DiffView';
-import { getTemplates, getTree, deleteNode } from '@/lib/api';
+import { getTemplates, getTree, deleteNode, generateFull, regenerateSection } from '@/lib/api';
 import type { ResumeNode, TreeData } from '@/types/tree';
 import type { ActiveView } from '@/types/knowledge';
 import type { TemplateInfo } from '@/types/template';
@@ -50,6 +50,8 @@ interface CenterPanelProps {
   onNodeSelect?: (nodeId: string | null) => void;
   /** US-13：section_order 更新版本号，变化时重新拉取选中节点数据 */
   sectionOrderVersion?: number;
+  /** US-14: JD 结构化数据（从右栏 JD 分析获取），用于一键生成 */
+  structuredJD?: Record<string, unknown> | null;
 }
 
 /**
@@ -82,6 +84,7 @@ export default function CenterPanel({
   onTreeNodesUpdate,
   onNodeSelect,
   sectionOrderVersion = 0,
+  structuredJD = null,
 }: CenterPanelProps) {
   const [activeTab, setActiveTab] = useState<string>('版本树');
   const [selectedNode, setSelectedNode] = useState<ResumeNode | null>(null);
@@ -116,11 +119,66 @@ export default function CenterPanel({
   // US-13: section_order 更新后重新拉取选中节点的 content_json
   useEffect(() => {
     if (sectionOrderVersion === 0 || !selectedNode) return;
-    getTree().then((data) => {
+    getTree().then((data: TreeData) => {
       const updated = data.nodes.find((n) => n.node_id === selectedNode.node_id);
       if (updated) setSelectedNode(updated);
     });
   }, [sectionOrderVersion]);
+
+  // US-14: 一键生成 / 单段重生成
+  const [generating, setGenerating] = useState(false);
+  const [generatingSection, setGeneratingSection] = useState<string | null>(null);
+  const [generateMsg, setGenerateMsg] = useState<string | null>(null);
+
+  const reloadSelectedNode = useCallback(() => {
+    if (!selectedNode) return;
+    getTree().then((data: TreeData) => {
+      const updated = data.nodes.find((n) => n.node_id === selectedNode.node_id);
+      if (updated) setSelectedNode(updated);
+    });
+  }, [selectedNode]);
+
+  const handleGenerateFull = useCallback(async () => {
+    if (!selectedNode || generating) return;
+    if (!structuredJD) {
+      setGenerateMsg('请先在右栏上传 JD 招聘信息');
+      setTimeout(() => setGenerateMsg(null), 3000);
+      return;
+    }
+    setGenerating(true);
+    setGenerateMsg(null);
+    try {
+      await generateFull(selectedNode.node_id, structuredJD ?? undefined);
+      reloadSelectedNode();
+      setGenerateMsg('一键生成完成');
+    } catch (err: unknown) {
+      setGenerateMsg(err instanceof Error ? err.message : '生成失败');
+    } finally {
+      setGenerating(false);
+      setTimeout(() => setGenerateMsg(null), 3000);
+    }
+  }, [selectedNode, generating, reloadSelectedNode, structuredJD]);
+
+  const handleRegenerateSection = useCallback(
+    async (section: string) => {
+      if (!selectedNode || generatingSection) return;
+      if (!structuredJD) {
+        setGenerateMsg('请先在右栏上传 JD 招聘信息');
+        setTimeout(() => setGenerateMsg(null), 3000);
+        return;
+      }
+      setGeneratingSection(section);
+      try {
+        await regenerateSection(selectedNode.node_id, section, structuredJD ?? undefined);
+        reloadSelectedNode();
+      } catch {
+        // 静默
+      } finally {
+        setGeneratingSection(null);
+      }
+    },
+    [selectedNode, generatingSection, reloadSelectedNode, structuredJD],
+  );
 
   const handleTreeLoad = useCallback((data: TreeData) => {
     setTree(data);
@@ -210,7 +268,7 @@ export default function CenterPanel({
 
       {/* Tab 内容：版本树 / 编辑器 / Diff 对比 */}
       {activeTab === '编辑器' ? (
-        // US-8：编辑器 Tab = 模板选择器 + 简历预览
+        // US-8：编辑器 Tab = 模板选择器 + 工具栏 + 简历预览
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="p-3 border-b border-border-subtle">
             <TemplateSelector
@@ -219,10 +277,45 @@ export default function CenterPanel({
               onSelect={handleTemplateSelect}
             />
           </div>
+          {/* US-14: 一键生成工具栏 */}
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-border-subtle bg-bg-tertiary">
+            <button
+              onClick={handleGenerateFull}
+              disabled={!selectedNode || generating}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-brand-primary text-white text-xs font-medium hover:bg-brand-primary-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {generating ? (
+                <>
+                  <svg className="animate-spin w-3 h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M8 1.5a6.5 6.5 0 1 0 6.5 6.5" />
+                  </svg>
+                  生成中...
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M8 1v14M1 8h14" />
+                  </svg>
+                  一键生成
+                </>
+              )}
+            </button>
+            {generateMsg && (
+              <span className="text-xs text-text-muted">{generateMsg}</span>
+            )}
+            {!selectedNode && (
+              <span className="text-xs text-text-muted">请先选择版本树节点</span>
+            )}
+            {selectedNode && !structuredJD && !generateMsg && (
+              <span className="text-xs text-text-muted">需先在右栏上传 JD 招聘信息</span>
+            )}
+          </div>
           <div className="flex-1 overflow-y-auto p-4 bg-bg-secondary">
             <ResumePreview
               resumeData={previewData}
               templateId={templateId}
+              onRegenerateSection={handleRegenerateSection}
+              generatingSection={generatingSection}
             />
           </div>
         </div>
