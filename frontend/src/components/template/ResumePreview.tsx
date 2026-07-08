@@ -10,11 +10,15 @@ interface ResumePreviewProps {
   resumeData: Record<string, unknown> | null;
   /** 当前模板 id，决定视觉风格 */
   templateId: string;
+  /** US-14: 单段重新生成回调 */
+  onRegenerateSection?: (section: string) => void;
+  /** US-14: 正在重新生成的段落 key */
+  generatingSection?: string | null;
 }
 
 const THEME_COLORS: Record<string, string> = {
   modern: '#2563eb',
-  classic: '#1C48C',
+  classic: '#1C487C',
   tech: '#0F766E',
 };
 
@@ -305,6 +309,8 @@ function EducationItemView({
 export default function ResumePreview({
   resumeData,
   templateId,
+  onRegenerateSection,
+  generatingSection,
 }: ResumePreviewProps) {
   if (!resumeData) {
     return (
@@ -528,13 +534,26 @@ export default function ResumePreview({
         if (!renderer) return null;
         const content = renderer.render();
         if (content === null) return null;
+        const isGenerating = generatingSection === section.key;
         return (
           <section key={section.key}>
-            <SectionHeader
-              title={section.title || renderer.title}
-              templateId={templateId}
-              themeColor={themeColor}
-            />
+            <div className="flex items-center justify-between">
+              <SectionHeader
+                title={section.title || renderer.title}
+                templateId={templateId}
+                themeColor={themeColor}
+              />
+              {onRegenerateSection && (
+                <button
+                  onClick={() => onRegenerateSection(section.key)}
+                  disabled={isGenerating}
+                  className="text-[10px] px-1.5 py-0.5 rounded text-text-muted hover:text-brand-primary hover:border-brand-primary border border-transparent transition-colors disabled:opacity-50"
+                  title={`重新生成${section.title || renderer.title}`}
+                >
+                  {isGenerating ? '生成中...' : '↻'}
+                </button>
+              )}
+            </div>
             {content}
           </section>
         );
