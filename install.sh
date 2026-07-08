@@ -220,7 +220,7 @@ if [ "${SKIP_CONFIG:-false}" != "true" ]; then
     # Base URL
     case "$PROVIDER" in
         deepseek)
-            DEFAULT_URL="https://api.deepseek.com/v1"
+            DEFAULT_URL="https://api.deepseek.com"
             DEFAULT_MODEL="deepseek-chat"
             ;;
         claude)

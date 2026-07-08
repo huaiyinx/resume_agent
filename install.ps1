@@ -232,7 +232,7 @@ if (-not $SkipConfig) {
     $defaultUrl = ""
     $defaultModel = "gpt-4o"
     if ($provider -eq "deepseek") {
-        $defaultUrl = "https://api.deepseek.com/v1"
+        $defaultUrl = "https://api.deepseek.com"
         $defaultModel = "deepseek-chat"
     } elseif ($provider -eq "claude") {
         $defaultUrl = "https://api.anthropic.com"
@@ -245,26 +245,35 @@ if (-not $SkipConfig) {
     $model = Read-Host "LLM Model (default: $defaultModel)"
     if ([string]::IsNullOrWhiteSpace($model)) { $model = $defaultModel }
 
-    # Read and replace .env content
-    $envContent = Get-Content $EnvFile -Raw
-    $envContent = $envContent -replace '^LLM_PROVIDER=.*', "LLM_PROVIDER=$provider"
-    $envContent = $envContent -replace '^LLM_API_KEY=.*', "LLM_API_KEY=$apiKey"
-    $envContent = $envContent -replace '^LLM_BASE_URL=.*', "LLM_BASE_URL=$baseUrl"
-    $envContent = $envContent -replace '^LLM_MODEL=.*', "LLM_MODEL=$model"
-    $envContent | Set-Content $EnvFile -NoNewline
-
-    Write-OkMsg "LLM config saved to .env"
-    Write-Host ""
-
     # MinerU API Token
+    Write-Host ""
     Write-Host "MinerU is required for resume parsing." -ForegroundColor Cyan
     Write-Host "  Get token: https://mineru.net/apiManage" -ForegroundColor Cyan
     Write-Host ""
     $mineruToken = Read-Host "MinerU API Token (Enter to skip, edit .env later)"
+
+    # Write config by reading file line by line
+    $lines = Get-Content $EnvFile
+    $newLines = @()
+    foreach ($line in $lines) {
+        if ($line -match '^LLM_PROVIDER=') {
+            $newLines += "LLM_PROVIDER=$provider"
+        } elseif ($line -match '^LLM_API_KEY=') {
+            $newLines += "LLM_API_KEY=$apiKey"
+        } elseif ($line -match '^LLM_BASE_URL=') {
+            $newLines += "LLM_BASE_URL=$baseUrl"
+        } elseif ($line -match '^LLM_MODEL=') {
+            $newLines += "LLM_MODEL=$model"
+        } elseif ($line -match '^MINERU_API_TOKEN=' -and -not [string]::IsNullOrWhiteSpace($mineruToken)) {
+            $newLines += "MINERU_API_TOKEN=$mineruToken"
+        } else {
+            $newLines += $line
+        }
+    }
+    $newLines | Set-Content $EnvFile -Encoding UTF8
+
+    Write-OkMsg "LLM config saved to .env"
     if (-not [string]::IsNullOrWhiteSpace($mineruToken)) {
-        $envContent = Get-Content $EnvFile -Raw
-        $envContent = $envContent -replace '^MINERU_API_TOKEN=.*', "MINERU_API_TOKEN=$mineruToken"
-        $envContent | Set-Content $EnvFile -NoNewline
         Write-OkMsg "MinerU Token saved to .env"
     } else {
         Write-WarnMsg "MinerU Token not set, resume parsing will not work. Edit .env later."
