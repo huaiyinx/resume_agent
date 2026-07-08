@@ -290,7 +290,7 @@ if ($DockerAvailable) {
     Write-Host "  URL:       http://localhost:5173" -ForegroundColor Cyan
     Write-Host ""
 }
-Write-Host "  Dev mode:  .\Makefile.ps1 dev" -ForegroundColor Cyan
+Write-Host "  Dev mode:  powershell -ExecutionPolicy Bypass -File Makefile.ps1 dev" -ForegroundColor Cyan
 Write-Host "  Frontend:  http://localhost:5173" -ForegroundColor Cyan
 Write-Host "  Backend:   http://localhost:8000" -ForegroundColor Cyan
 Write-Host ""

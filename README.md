@@ -58,12 +58,12 @@ make dev        # 启动开发服务器
 powershell -ExecutionPolicy Bypass -File install.ps1
 
 # 日常开发命令（Makefile.ps1 等效 macOS Makefile）
-.\Makefile.ps1 install    # 安装依赖
-.\Makefile.ps1 dev        # 启动开发服务器
-.\Makefile.ps1 test       # 运行测试
-.\Makefile.ps1 build      # 构建前端
-.\Makefile.ps1 lint       # 代码检查
-.\Makefile.ps1 clean      # 清理构建产物
+powershell -ExecutionPolicy Bypass -File Makefile.ps1 install    # 安装依赖
+powershell -ExecutionPolicy Bypass -File Makefile.ps1 dev        # 启动开发服务器
+powershell -ExecutionPolicy Bypass -File Makefile.ps1 test       # 运行测试
+powershell -ExecutionPolicy Bypass -File Makefile.ps1 build      # 构建前端
+powershell -ExecutionPolicy Bypass -File Makefile.ps1 lint       # 代码检查
+powershell -ExecutionPolicy Bypass -File Makefile.ps1 clean      # 清理构建产物
 ```
 
 Windows 数据存储路径：`%USERPROFILE%\.resume-agent\`（自动创建）
