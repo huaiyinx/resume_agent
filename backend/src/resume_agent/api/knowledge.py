@@ -147,8 +147,8 @@ async def upload_knowledge(file: UploadFile) -> dict[str, Any]:
     content = await file.read()
     saved_path.write_bytes(content)
 
-    # 写入 DB（file_path 存储相对路径，相对 files_root）
-    relative_path = f"knowledge/{saved_filename}"
+    # 写入 DB（file_path 存储相对路径，相对 files_root，使用 POSIX 分隔符保证跨平台一致）
+    relative_path = f"knowledge/{saved_filename}"  # noqa: 使用正斜杠保证 Windows/Linux 一致
     with get_connection() as conn:
         conn.execute(
             """
