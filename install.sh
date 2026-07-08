@@ -207,9 +207,19 @@ if [ "${SKIP_CONFIG:-false}" != "true" ]; then
     echo -e "${CYAN}请配置 LLM 信息（直接回车使用默认值）:${NC}"
     echo ""
 
+    # 是否现在配置
+    read -rp "是否现在配置 API Key? (Y/n): " CONFIG_NOW
+    if [[ "$CONFIG_NOW" =~ ^[Nn]$ ]]; then
+        info "跳过配置，稍后手动编辑 .env"
+        echo ""
+        SKIP_CONFIG=true
+    fi
+fi
+
+if [ "${SKIP_CONFIG:-false}" != "true" ]; then
     # LLM Provider
-    read -rp "LLM Provider [openai/claude/deepseek/custom] (默认 openai): " INPUT_PROVIDER
-    PROVIDER="${INPUT_PROVIDER:-openai}"
+    read -rp "LLM Provider [openai/claude/deepseek/custom] (默认 deepseek): " INPUT_PROVIDER
+    PROVIDER="${INPUT_PROVIDER:-deepseek}"
 
     # API Key
     read -rp "LLM API Key (必填): " INPUT_KEY
@@ -221,7 +231,7 @@ if [ "${SKIP_CONFIG:-false}" != "true" ]; then
     case "$PROVIDER" in
         deepseek)
             DEFAULT_URL="https://api.deepseek.com"
-            DEFAULT_MODEL="deepseek-chat"
+            DEFAULT_MODEL="deepseek-v4-pro"
             ;;
         claude)
             DEFAULT_URL="https://api.anthropic.com"

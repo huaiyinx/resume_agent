@@ -218,9 +218,19 @@ if (-not $SkipConfig) {
     Write-Host "Configure LLM (press Enter for defaults):" -ForegroundColor Cyan
     Write-Host ""
 
+    # Ask if user wants to configure now
+    $configNow = Read-Host "Configure LLM API Key now? (Y/n)"
+    if ($configNow -eq "n" -or $configNow -eq "N") {
+        Write-InfoMsg "Skipping config. Edit .env manually later."
+        Write-Host ""
+        $SkipConfig = $true
+    }
+}
+
+if (-not $SkipConfig) {
     # LLM Provider
-    $provider = Read-Host "LLM Provider [openai/claude/deepseek/custom] (default: openai)"
-    if ([string]::IsNullOrWhiteSpace($provider)) { $provider = "openai" }
+    $provider = Read-Host "LLM Provider [openai/claude/deepseek/custom] (default: deepseek)"
+    if ([string]::IsNullOrWhiteSpace($provider)) { $provider = "deepseek" }
 
     # API Key
     $apiKey = Read-Host "LLM API Key (required)"
@@ -233,7 +243,7 @@ if (-not $SkipConfig) {
     $defaultModel = "gpt-4o"
     if ($provider -eq "deepseek") {
         $defaultUrl = "https://api.deepseek.com"
-        $defaultModel = "deepseek-chat"
+        $defaultModel = "deepseek-v4-pro"
     } elseif ($provider -eq "claude") {
         $defaultUrl = "https://api.anthropic.com"
         $defaultModel = "claude-sonnet-4-20250514"
@@ -252,25 +262,31 @@ if (-not $SkipConfig) {
     Write-Host ""
     $mineruToken = Read-Host "MinerU API Token (Enter to skip, edit .env later)"
 
-    # Write config by reading file line by line
-    $lines = Get-Content $EnvFile
-    $newLines = @()
-    foreach ($line in $lines) {
-        if ($line -match '^LLM_PROVIDER=') {
-            $newLines += "LLM_PROVIDER=$provider"
-        } elseif ($line -match '^LLM_API_KEY=') {
-            $newLines += "LLM_API_KEY=$apiKey"
-        } elseif ($line -match '^LLM_BASE_URL=') {
-            $newLines += "LLM_BASE_URL=$baseUrl"
-        } elseif ($line -match '^LLM_MODEL=') {
-            $newLines += "LLM_MODEL=$model"
-        } elseif ($line -match '^MINERU_API_TOKEN=' -and -not [string]::IsNullOrWhiteSpace($mineruToken)) {
-            $newLines += "MINERU_API_TOKEN=$mineruToken"
-        } else {
-            $newLines += $line
-        }
-    }
-    $newLines | Set-Content $EnvFile -Encoding UTF8
+    # Write .env file from scratch (ASCII only, no Chinese comments to avoid encoding issues)
+    $envContent = @"
+LLM_PROVIDER=$provider
+LLM_API_KEY=$apiKey
+LLM_BASE_URL=$baseUrl
+LLM_MODEL=$model
+
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small
+
+MINERU_API_TOKEN=$mineruToken
+MINERU_API_BASE=https://mineru.net
+
+RESUME_AGENT_HOME=~/.resume-agent
+SQLITE_PATH=~/.resume-agent/data.db
+CHROMA_PATH=~/.resume-agent/chroma
+FILES_ROOT=~/.resume-agent/files
+
+HOST=0.0.0.0
+PORT=5173
+DEBUG=false
+CORS_ORIGINS=http://localhost:5173
+"@
+    # Write as ASCII to avoid any encoding issues on Windows
+    [System.IO.File]::WriteAllText($EnvFile, $envContent, [System.Text.Encoding]::ASCII)
 
     Write-OkMsg "LLM config saved to .env"
     if (-not [string]::IsNullOrWhiteSpace($mineruToken)) {
