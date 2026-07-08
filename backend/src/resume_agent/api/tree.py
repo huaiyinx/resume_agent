@@ -211,9 +211,10 @@ def create_node(req: CreateNodeRequest) -> dict[str, Any]:
         if existing is not None:
             return error("NODE_ID_CONFLICT", f"节点 ID 已存在: {node_id}")
 
-        # 5. 继承父节点 personal_info（US-12）
+        # 5. 继承父节点 personal_info + section_order（US-12 + US-13）
         parent_content_raw = parent["content_json"]
         inherited_personal_info = None
+        inherited_section_order = None
         if parent_content_raw:
             with contextlib.suppress(json.JSONDecodeError, TypeError):
                 parent_content = (
@@ -223,14 +224,18 @@ def create_node(req: CreateNodeRequest) -> dict[str, Any]:
                 )
                 if isinstance(parent_content, dict):
                     inherited_personal_info = parent_content.get("personal_info")
+                    inherited_section_order = parent_content.get("section_order")
 
         # 6. INSERT 到 resume_versions
         node_uuid = str(uuid.uuid4())
-        # 如果继承了 personal_info，写入新节点的 content_json
+        # 如果继承了字段，写入新节点的 content_json
+        inherited_data: dict[str, Any] = {}
         if inherited_personal_info:
-            content_json_str = json.dumps(
-                {"personal_info": inherited_personal_info}, ensure_ascii=False
-            )
+            inherited_data["personal_info"] = inherited_personal_info
+        if inherited_section_order:
+            inherited_data["section_order"] = inherited_section_order
+        if inherited_data:
+            content_json_str = json.dumps(inherited_data, ensure_ascii=False)
             conn.execute(
                 """
                 INSERT INTO resume_versions

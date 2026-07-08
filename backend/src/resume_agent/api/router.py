@@ -17,6 +17,7 @@ from resume_agent.api import (
     knowledge,
     personal_info,
     resumes,
+    section_order,
     suggest,
     templates,
     tree,
@@ -41,6 +42,7 @@ api_router.include_router(templates.router)
 api_router.include_router(diff.router)
 api_router.include_router(tutor.router)
 api_router.include_router(personal_info.router)
+api_router.include_router(section_order.router)
 
 
 __all__ = ["api_router"]

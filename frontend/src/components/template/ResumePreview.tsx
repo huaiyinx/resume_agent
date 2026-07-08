@@ -336,13 +336,171 @@ export default function ResumePreview({
   const { isObject: skillsIsObject, obj: skillsObj, strArray: skillsStrArray } =
     extractSkills(resumeData);
 
-  const hasContent =
-    summary ||
-    experiences.length > 0 ||
-    projects.length > 0 ||
-    education.length > 0 ||
-    skillsStrArray.length > 0 ||
-    (skillsIsObject && Object.keys(skillsObj).length > 0);
+  // 获取 section_order（US-13）
+  const sectionOrderRaw = resumeData.section_order;
+  const sectionOrder: Array<{ key: string; title: string; visible: boolean }> =
+    Array.isArray(sectionOrderRaw)
+      ? sectionOrderRaw
+          .filter(
+            (s): s is Record<string, unknown> =>
+              typeof s === 'object' && s !== null,
+          )
+          .map((s) => ({
+            key: asString(s.key),
+            title: asString(s.title),
+            visible: s.visible !== false,
+          }))
+      : [];
+
+  // 段落内容映射
+  const sectionRenderers: Record<
+    string,
+    { title: string; render: () => React.ReactNode }
+  > = {
+    summary: {
+      title: '自我评价',
+      render: () =>
+        summary ? (
+          <p className="text-xs text-text-secondary leading-relaxed">
+            {summary}
+          </p>
+        ) : null,
+    },
+    experience: {
+      title: '工作经历',
+      render: () =>
+        experiences.length > 0 ? (
+          <>
+            {experiences.map((exp, i) => (
+              <ExperienceItem key={i} exp={exp} compact={compact} />
+            ))}
+          </>
+        ) : null,
+    },
+    projects: {
+      title: '项目经历',
+      render: () =>
+        projects.length > 0 ? (
+          <>
+            {projects.map((proj, i) => (
+              <ProjectItemView key={i} proj={proj} compact={compact} />
+            ))}
+          </>
+        ) : null,
+    },
+    skills: {
+      title: '技能',
+      render: () => {
+        if (skillsIsObject && Object.keys(skillsObj).length > 0) {
+          return (
+            <div className="space-y-1.5">
+              {[
+                { key: 'tech_stack', label: '技术栈' },
+                { key: 'hard_skills', label: '硬技能' },
+                { key: 'soft_skills', label: '软技能' },
+              ].map((cat) => {
+                const items = asObjectArray(skillsObj[cat.key]);
+                if (items.length === 0) return null;
+                return (
+                  <div key={cat.key}>
+                    <div className="text-xs font-medium text-text-secondary mb-0.5">
+                      {cat.label}
+                    </div>
+                    {items.map((item, i) => {
+                      const sName = asString(item.name);
+                      const context = asString(item.context);
+                      return (
+                        <div
+                          key={i}
+                          className="text-xs text-text-secondary flex gap-1.5 leading-snug"
+                        >
+                          <span className="text-text-muted flex-shrink-0">·</span>
+                          {context ? (
+                            <span>
+                              <span className="text-text-primary font-medium">
+                                {sName}
+                              </span>
+                              <span className="text-text-tertiary">：{context}</span>
+                            </span>
+                          ) : (
+                            <span className="text-text-primary">{sName}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        }
+        if (skillsStrArray.length > 0) {
+          return (
+            <div className="flex flex-wrap gap-1">
+              {skillsStrArray.map((skill, i) => (
+                <span
+                  key={i}
+                  className="text-[11px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          );
+        }
+        return null;
+      },
+    },
+    education: {
+      title: '教育背景',
+      render: () =>
+        education.length > 0 ? (
+          <>
+            {education.map((edu, i) => (
+              <EducationItemView key={i} edu={edu} compact={compact} />
+            ))}
+          </>
+        ) : null,
+    },
+    awards: {
+      title: '获奖经历',
+      render: () => null,
+    },
+    publications: {
+      title: '论文/专利',
+      render: () => null,
+    },
+    certificates: {
+      title: '证书',
+      render: () => null,
+    },
+  };
+
+  // 默认段落顺序（无 section_order 时）
+  const defaultOrder = [
+    'summary',
+    'experience',
+    'projects',
+    'skills',
+    'education',
+    'awards',
+    'publications',
+    'certificates',
+  ];
+
+  const orderedSections =
+    sectionOrder.length > 0
+      ? sectionOrder.filter((s) => s.visible && sectionRenderers[s.key])
+      : defaultOrder.map((key) => ({
+          key,
+          title: sectionRenderers[key]?.title ?? key,
+          visible: true,
+        }));
+
+  const hasContent = orderedSections.some((s) => {
+    const renderer = sectionRenderers[s.key];
+    return renderer && renderer.render() !== null;
+  });
 
   return (
     <div
@@ -364,128 +522,23 @@ export default function ResumePreview({
         </div>
       )}
 
-      {/* 自我评价 */}
-      {summary && (
-        <section>
-          <SectionHeader
-            title="自我评价"
-            templateId={templateId}
-            themeColor={themeColor}
-          />
-          <p className="text-xs text-text-secondary leading-relaxed">
-            {summary}
-          </p>
-        </section>
-      )}
-
-      {/* 工作经历 */}
-      {experiences.length > 0 && (
-        <section>
-          <SectionHeader
-            title="工作经历"
-            templateId={templateId}
-            themeColor={themeColor}
-          />
-          {experiences.map((exp, i) => (
-            <ExperienceItem key={i} exp={exp} compact={compact} />
-          ))}
-        </section>
-      )}
-
-      {/* 项目经历 */}
-      {projects.length > 0 && (
-        <section>
-          <SectionHeader
-            title="项目经历"
-            templateId={templateId}
-            themeColor={themeColor}
-          />
-          {projects.map((proj, i) => (
-            <ProjectItemView key={i} proj={proj} compact={compact} />
-          ))}
-        </section>
-      )}
-
-      {/* 技能 */}
-      {skillsIsObject && Object.keys(skillsObj).length > 0 && (
-        <section>
-          <SectionHeader
-            title="技能"
-            templateId={templateId}
-            themeColor={themeColor}
-          />
-          {/* 对象格式技能 */}
-          <div className="space-y-1.5">
-            {[
-              { key: 'tech_stack', label: '技术栈' },
-              { key: 'hard_skills', label: '硬技能' },
-              { key: 'soft_skills', label: '软技能' },
-            ].map((cat) => {
-              const items = asObjectArray(skillsObj[cat.key]);
-              if (items.length === 0) return null;
-              return (
-                <div key={cat.key}>
-                  <div className="text-xs font-medium text-text-secondary mb-0.5">
-                    {cat.label}
-                  </div>
-                  {items.map((item, i) => {
-                    const sName = asString(item.name);
-                    const context = asString(item.context);
-                    return (
-                      <div key={i} className="text-xs text-text-secondary flex gap-1.5 leading-snug">
-                        <span className="text-text-muted flex-shrink-0">·</span>
-                        {context ? (
-                          <span>
-                            <span className="text-text-primary font-medium">{sName}</span>
-                            <span className="text-text-tertiary">：{context}</span>
-                          </span>
-                        ) : (
-                          <span className="text-text-primary">{sName}</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* 字符串数组格式技能 */}
-      {!skillsIsObject && skillsStrArray.length > 0 && (
-        <section>
-          <SectionHeader
-            title="技能"
-            templateId={templateId}
-            themeColor={themeColor}
-          />
-          <div className="flex flex-wrap gap-1">
-            {skillsStrArray.map((skill, i) => (
-              <span
-                key={i}
-                className="text-[11px] px-1.5 py-0.5 rounded bg-bg-tertiary text-text-secondary"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 教育背景 */}
-      {education.length > 0 && (
-        <section>
-          <SectionHeader
-            title="教育背景"
-            templateId={templateId}
-            themeColor={themeColor}
-          />
-          {education.map((edu, i) => (
-            <EducationItemView key={i} edu={edu} compact={compact} />
-          ))}
-        </section>
-      )}
+      {/* 按排序渲染各段落 */}
+      {orderedSections.map((section) => {
+        const renderer = sectionRenderers[section.key];
+        if (!renderer) return null;
+        const content = renderer.render();
+        if (content === null) return null;
+        return (
+          <section key={section.key}>
+            <SectionHeader
+              title={section.title || renderer.title}
+              templateId={templateId}
+              themeColor={themeColor}
+            />
+            {content}
+          </section>
+        );
+      })}
 
       {/* 全部段落为空时的提示 */}
       {!hasContent && (

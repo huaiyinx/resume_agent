@@ -29,6 +29,8 @@ export default function MainLayout() {
   const [treeNodes, setTreeNodes] = useState<ResumeNode[]>([]);
   // US-12：当前选中的节点 ID（传给左栏 PersonalInfoForm）
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  /** US-13: section_order 更新后通知 CenterPanel 刷新 selectedNode 的 content_json */
+  const [sectionOrderVersion, setSectionOrderVersion] = useState(0);
 
   const handleTreeRefresh = useCallback(() => {
     setTreeRefreshKey((k) => k + 1);
@@ -71,6 +73,7 @@ export default function MainLayout() {
         knowledgeRefreshKey={knowledgeRefreshKey}
         onNavigate={handleNavigate}
         selectedNodeId={selectedNodeId}
+        onSectionOrderUpdated={() => setSectionOrderVersion((v) => v + 1)}
       />
       <CenterPanel
         activeView={activeView}
@@ -83,6 +86,7 @@ export default function MainLayout() {
         onTemplateSelect={handleTemplateSelect}
         onTreeNodesUpdate={handleTreeNodesUpdate}
         onNodeSelect={setSelectedNodeId}
+        sectionOrderVersion={sectionOrderVersion}
       />
       {/* 右栏始终可见：JD 截图分析 / Gap 报告 / AI 导师均在此栏，
           无需随导航项切换（"职位截图分析"等导航仅影响中栏视图） */}
