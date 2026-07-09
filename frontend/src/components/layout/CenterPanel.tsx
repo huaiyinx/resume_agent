@@ -57,6 +57,8 @@ interface CenterPanelProps {
   sectionOrderVersion?: number;
   /** US-14: JD 结构化数据（从右栏 JD 分析获取），用于一键生成 */
   structuredJD?: Record<string, unknown> | null;
+  /** 展开右栏回调（点击"为该岗位动态生成"时展开右栏） */
+  onExpandRightPanel?: () => void;
 }
 
 /**
@@ -90,8 +92,14 @@ export default function CenterPanel({
   onNodeSelect,
   sectionOrderVersion = 0,
   structuredJD = null,
+  onExpandRightPanel,
 }: CenterPanelProps) {
   const [activeTab, setActiveTab] = useState<string>('版本树');
+
+  // activeView 变化时重置 activeTab 到版本树（切换导航时回到版本树画布）
+  useEffect(() => {
+    setActiveTab('版本树');
+  }, [activeView]);
   const [selectedNode, setSelectedNode] = useState<ResumeNode | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   // US-17: 上游变更
@@ -267,13 +275,15 @@ export default function CenterPanel({
       return;
     }
     if (!structuredJD) {
+      // 没有 JD → 展开右栏让用户上传
+      onExpandRightPanel?.();
       setGenerateMsg('请先在右栏上传岗位截图，分析完成后将自动生成简历');
       setTimeout(() => setGenerateMsg(null), 4000);
       return;
     }
     // 有 JD → 直接开始生成
     handleGenerateFull();
-  }, [selectedNode, structuredJD, handleGenerateFull]);
+  }, [selectedNode, structuredJD, handleGenerateFull, onExpandRightPanel]);
 
   const handleRegenerateSection = useCallback(
     async (section: string) => {

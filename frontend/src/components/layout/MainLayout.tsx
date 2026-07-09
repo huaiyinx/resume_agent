@@ -107,6 +107,7 @@ export default function MainLayout({
         onNodeSelect={setSelectedNodeId}
         sectionOrderVersion={sectionOrderVersion}
         structuredJD={structuredJD}
+        onExpandRightPanel={() => onToggleRightPanel(false)}
       />
       {/* 右栏：收起时仅显示一个展开按钮条 */}
       {rightPanelCollapsed ? (
