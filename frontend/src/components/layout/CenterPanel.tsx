@@ -24,7 +24,7 @@ const TAB_PILLS = ['版本树', '编辑器', 'Diff 对比'] as const;
 
 /** API 调用失败时的硬编码 fallback 模板 */
 const FALLBACK_TEMPLATES: TemplateInfo[] = [
-  { id: 'modern', name: '现代简约', description: '简洁现代风，分隔线 + 左对齐标题', theme_color: '#2563eb' },
+  { id: 'modern', name: '现代简约', description: '简洁现代风，分隔线 + 左对齐标题', theme_color: '#1d4ed8' },
   { id: 'classic', name: '经典色块', description: '色块标题条 + 白字标题，沉稳大气', theme_color: '#1C487C' },
   { id: 'tech', name: '紧凑技术风', description: '页边距小、字号紧凑，适合技术岗', theme_color: '#0F766E' },
   { id: 'minimal', name: '极简白', description: '单栏大量留白，无色块无分隔线', theme_color: '#333333' },
@@ -57,6 +57,10 @@ interface CenterPanelProps {
   sectionOrderVersion?: number;
   /** US-14: JD 结构化数据（从右栏 JD 分析获取），用于一键生成 */
   structuredJD?: Record<string, unknown> | null;
+  /** 展开右栏回调（点击"为该岗位动态生成"时展开右栏） */
+  onExpandRightPanel?: () => void;
+  /** 导航计数器：每次点击导航递增，强制重置 activeTab 到"版本树" */
+  navKey?: number;
 }
 
 /**
@@ -90,8 +94,15 @@ export default function CenterPanel({
   onNodeSelect,
   sectionOrderVersion = 0,
   structuredJD = null,
+  onExpandRightPanel,
+  navKey = 0,
 }: CenterPanelProps) {
   const [activeTab, setActiveTab] = useState<string>('版本树');
+
+  // navKey 变化时重置 activeTab 到版本树（每次点击导航项都触发）
+  useEffect(() => {
+    setActiveTab('版本树');
+  }, [navKey]);
   const [selectedNode, setSelectedNode] = useState<ResumeNode | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   // US-17: 上游变更
@@ -222,6 +233,7 @@ export default function CenterPanel({
   const [generateMsg, setGenerateMsg] = useState<string | null>(null);
   // US-15: 完整性检测刷新触发器
   const [completenessRefreshKey, setCompletenessRefreshKey] = useState(0);
+  // US-22: 底部"为该岗位动态生成"按钮 → 切换到编辑器 Tab + 触发生成
 
   const reloadSelectedNode = useCallback(() => {
     if (!selectedNode) return;
@@ -254,6 +266,27 @@ export default function CenterPanel({
       setTimeout(() => setGenerateMsg(null), 3000);
     }
   }, [selectedNode, generating, reloadSelectedNode, structuredJD]);
+
+  // US-22: 底部"为该岗位动态生成"按钮 → 切换到编辑器 Tab + 触发生成
+  const handleBottomGenerate = useCallback(async () => {
+    // 无论什么情况，先切换到编辑器 Tab
+    setActiveTab('编辑器');
+
+    if (!selectedNode) {
+      setGenerateMsg('请先在版本树中选中一个分支节点');
+      setTimeout(() => setGenerateMsg(null), 4000);
+      return;
+    }
+    if (!structuredJD) {
+      // 没有 JD → 展开右栏让用户上传
+      onExpandRightPanel?.();
+      setGenerateMsg('请先在右栏上传岗位截图，分析完成后将自动生成简历');
+      setTimeout(() => setGenerateMsg(null), 4000);
+      return;
+    }
+    // 有 JD → 直接开始生成
+    handleGenerateFull();
+  }, [selectedNode, structuredJD, handleGenerateFull, onExpandRightPanel]);
 
   const handleRegenerateSection = useCallback(
     async (section: string) => {
@@ -585,19 +618,30 @@ export default function CenterPanel({
               新建分支
             </button>
             <button
-              className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-medium border-none rounded-md cursor-pointer font-body transition-all hover:brightness-110 hover:-translate-y-px"
+              onClick={handleBottomGenerate}
+              disabled={generating}
+              className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-medium border-none rounded-md cursor-pointer font-body transition-all hover:brightness-110 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               style={{
                 background:
                   'linear-gradient(135deg, var(--color-accent-gradient-start), var(--color-accent-gradient-end))',
                 boxShadow: 'var(--shadow-glow-primary)',
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z" />
-              </svg>
-              为该岗位动态生成
+              {generating ? (
+                <svg className="animate-spin" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 1a7 7 0 1 0 7 7" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z" />
+                </svg>
+              )}
+              {generating ? '生成中...' : '为该岗位动态生成'}
             </button>
-            <button className="inline-flex items-center gap-2 px-5 py-2 bg-transparent text-text-secondary text-sm font-medium border border-border-default rounded-md cursor-pointer transition-all font-body hover:border-border-strong hover:text-text-primary hover:bg-bg-hover">
+            <button
+              onClick={() => setActiveTab('Diff 对比')}
+              className="inline-flex items-center gap-2 px-5 py-2 bg-transparent text-text-secondary text-sm font-medium border border-border-default rounded-md cursor-pointer transition-all font-body hover:border-border-strong hover:text-text-primary hover:bg-bg-hover"
+            >
               <svg
                 width="14"
                 height="14"
@@ -629,6 +673,7 @@ export default function CenterPanel({
             </button>
             {/* US-8：模板选择已移至"编辑器"Tab，此处不再重复展示 */}
           </div>
+
         </>
       )}
 

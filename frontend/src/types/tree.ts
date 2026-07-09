@@ -14,6 +14,10 @@ export interface ResumeNode {
   content_json?: Record<string, unknown> | null;
   /** US-17: 是否有上游 personal_info 变更待合并 */
   has_upstream_update?: boolean;
+  /** US-25: 创建时间 */
+  created_at?: string;
+  /** US-25: 最后更新时间 */
+  updated_at?: string;
 }
 
 export interface TreeEdge {

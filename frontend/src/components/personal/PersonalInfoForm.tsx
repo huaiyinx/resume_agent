@@ -167,6 +167,55 @@ export default function PersonalInfoForm({ nodeId }: PersonalInfoFormProps) {
     triggerSave(newInfo);
   }
 
+  // US-24: 头像上传 — 读取文件、裁剪为方形、转 base64
+  function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = ''; // 允许重复选同一文件
+
+    if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+      setExtractMsg('仅支持 JPG/PNG 格式');
+      setTimeout(() => setExtractMsg(null), 3000);
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setExtractMsg('图片大小不能超过 10MB');
+      setTimeout(() => setExtractMsg(null), 3000);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        // 裁剪为正方形（取中心区域）
+        const size = Math.min(img.width, img.height);
+        const offsetX = (img.width - size) / 2;
+        const offsetY = (img.height - size) / 2;
+        const canvas = document.createElement('canvas');
+        const targetSize = 200; // 输出 200x200
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, targetSize, targetSize);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const newInfo = { ...info, avatar: dataUrl };
+        setInfo(newInfo);
+        triggerSave(newInfo);
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // US-24: 移除头像
+  function handleRemoveAvatar() {
+    const newInfo = { ...info, avatar: '' };
+    setInfo(newInfo);
+    triggerSave(newInfo);
+  }
+
   // 求职意向不需要用户填写，由 JD 分析自动填充
   // function updateIntention(...) 已移除
 
@@ -318,6 +367,45 @@ export default function PersonalInfoForm({ nodeId }: PersonalInfoFormProps) {
           {extractMsg}
         </div>
       )}
+
+      {/* US-24: 头像上传 */}
+      <div className="flex items-center gap-3 px-3 py-3 border-b border-border-subtle">
+        {/* 头像预览 */}
+        <div className="relative flex-shrink-0">
+          {info.avatar ? (
+            <img
+              src={info.avatar}
+              alt="头像"
+              className="w-14 h-14 rounded-md object-cover border border-border-default"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-md bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white text-lg font-bold">
+              {info.contact.name?.charAt(0) || '?'}
+            </div>
+          )}
+        </div>
+        {/* 上传/移除按钮 */}
+        <div className="flex flex-col gap-1">
+          <label className="cursor-pointer text-[10px] px-2 py-1 rounded border border-border-subtle text-text-secondary hover:border-brand-primary hover:text-brand-primary transition-colors text-center">
+            {info.avatar ? '更换头像' : '上传头像'}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/jpg"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+          </label>
+          {info.avatar && (
+            <button
+              onClick={handleRemoveAvatar}
+              className="text-[10px] text-error hover:underline"
+            >
+              移除
+            </button>
+          )}
+          <span className="text-[9px] text-text-muted">JPG/PNG, ≤10MB</span>
+        </div>
+      </div>
 
       {/* 联系方式 */}
       <Section title="联系方式" defaultOpen={true}>

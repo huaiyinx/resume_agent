@@ -12,6 +12,8 @@ interface KnowledgeStatusProps {
   refreshKey?: number;
   /** 后端标识，仅用于展示 */
   backend?: string;
+  /** 统计数据加载完成后回调，供父组件获取 badge 数字 */
+  onStatsLoaded?: (stats: KnowledgeStats) => void;
 }
 
 /** 默认占位，避免首次加载前显示 0 */
@@ -24,6 +26,7 @@ const DEFAULT_STATS: KnowledgeStats = {
 export default function KnowledgeStatus({
   refreshKey = 0,
   backend = 'Chroma local',
+  onStatsLoaded,
 }: KnowledgeStatusProps) {
   const [stats, setStats] = useState<KnowledgeStats>(DEFAULT_STATS);
   const [loading, setLoading] = useState(true);
@@ -38,6 +41,7 @@ export default function KnowledgeStatus({
         if (!cancelled) {
           setStats(data);
           setLoading(false);
+          onStatsLoaded?.(data);
         }
       })
       .catch((err: unknown) => {

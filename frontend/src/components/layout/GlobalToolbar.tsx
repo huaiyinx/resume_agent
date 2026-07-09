@@ -1,12 +1,49 @@
 // frontend/src/components/layout/GlobalToolbar.tsx
-// 顶部 48px 工具栏：logo + 导航 Tab + 右侧状态（本地模式 chip + 头像）
+// 顶部 48px 工具栏：logo + 导航 Tab（与左栏联动）+ 右侧状态
+//
+// US-21：移除独立 state，Tab 与左栏导航统一联动
+// v1.4: "简历版本分支" Tab 点击时收起右栏，给中栏更多空间
 
-import { useState } from 'react';
+import type { ActiveView } from '@/types/knowledge';
 
-const NAV_TABS = ['总览面板', '简历版本分支', '知识库', '设置'] as const;
+const NAV_TABS: { label: string; view: ActiveView; collapseRight?: boolean }[] = [
+  { label: '总览面板', view: 'version-tree', collapseRight: false },
+  { label: '简历版本分支', view: 'version-tree', collapseRight: true },
+  { label: '知识库', view: 'knowledge', collapseRight: false },
+];
 
-export default function GlobalToolbar() {
-  const [activeTab, setActiveTab] = useState<string>('总览面板');
+interface GlobalToolbarProps {
+  /** 当前激活的视图 */
+  activeView?: ActiveView;
+  /** 导航切换回调 */
+  onNavigate?: (view: ActiveView) => void;
+  /** 右栏是否收起 */
+  rightPanelCollapsed?: boolean;
+  /** 切换右栏收起/展开 */
+  onToggleRightPanel?: (collapsed: boolean) => void;
+}
+
+export default function GlobalToolbar({
+  activeView = 'version-tree',
+  onNavigate,
+  rightPanelCollapsed = false,
+  onToggleRightPanel,
+}: GlobalToolbarProps) {
+  // 根据 activeView 决定高亮 Tab
+  // 右栏收起时高亮"简历版本分支"，展开时高亮"总览面板"
+  const activeLabel =
+    activeView === 'knowledge'
+      ? '知识库'
+      : rightPanelCollapsed
+        ? '简历版本分支'
+        : '总览面板';
+
+  function handleTabClick(tab: (typeof NAV_TABS)[number]) {
+    onNavigate?.(tab.view);
+    if (tab.collapseRight !== undefined) {
+      onToggleRightPanel?.(tab.collapseRight);
+    }
+  }
 
   return (
     <header
@@ -36,19 +73,19 @@ export default function GlobalToolbar() {
         </span>
       </div>
 
-      {/* Nav tabs */}
+      {/* Nav tabs — 与左栏导航联动 */}
       <nav className="flex gap-1">
         {NAV_TABS.map((tab) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={tab.label}
+            onClick={() => handleTabClick(tab)}
             className={`px-4 py-1.5 rounded-md text-sm transition-all border-none cursor-pointer font-body ${
-              activeTab === tab
+              activeLabel === tab.label
                 ? 'text-brand-primary bg-brand-primary-muted font-medium'
                 : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
             }`}
           >
-            {tab}
+            {tab.label}
           </button>
         ))}
       </nav>

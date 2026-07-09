@@ -62,6 +62,7 @@ class PersonalInfo(BaseModel):
     job_intention: JobIntention = JobIntention()
     education: list[EducationItem] = []
     summary: str = ""
+    avatar: str = ""
 
 
 # === 辅助函数 ===
