@@ -1,7 +1,10 @@
 // frontend/src/components/tree/nodes/NodeTooltip.tsx
 // US-25: 节点 hover tooltip — 悬停 500ms 后显示节点关键信息
+// 修复：使用 createPortal 渲染到 document.body，
+// 因为 React Flow 容器使用 CSS transform，position:fixed 会失效
 
 import { useCallback, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 /** Tooltip 显示的数据 */
 export interface TooltipData {
@@ -91,7 +94,8 @@ export function useNodeTooltip() {
   return { tooltip, handleMouseEnter, handleMouseLeave };
 }
 
-/** Tooltip 渲染层 — 固定定位在画布上 */
+/** Tooltip 渲染层 — 通过 Portal 渲染到 document.body，
+ *  避免 React Flow CSS transform 导致 position:fixed 失效 */
 export function TooltipLayer({
   tooltip,
 }: {
@@ -101,9 +105,9 @@ export function TooltipLayer({
 
   const { data, x, y } = tooltip;
 
-  return (
+  const content = (
     <div
-      className="fixed z-50 pointer-events-none"
+      className="fixed z-[9999] pointer-events-none"
       style={{ left: x, top: y, width: 240 }}
     >
       <div className="bg-white border border-border-default rounded-lg shadow-lg p-3 space-y-1.5">
@@ -156,4 +160,7 @@ export function TooltipLayer({
       </div>
     </div>
   );
+
+  // 使用 Portal 渲染到 body，绕过 React Flow 的 CSS transform
+  return createPortal(content, document.body);
 }

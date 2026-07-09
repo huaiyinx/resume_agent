@@ -105,7 +105,7 @@ function toFlowNode(n: ResumeNode, position: { x: number; y: number }): Node {
     position,
     draggable: true,
     selectable: true,
-    connectable: false,
+    connectable: true,
   };
   const tooltipData = buildTooltipData(n);
 
@@ -168,9 +168,9 @@ function layoutTree(tree: TreeData): { nodes: Node[]; edges: Edge[] } {
     id: `e-${i}`,
     source: e.source,
     target: e.target,
-    type: 'smoothstep',
-    animated: false,
-    style: { stroke: '#6d28d9', strokeWidth: 1.8, opacity: 0.5 },
+    type: 'bezier',
+    animated: true,
+    style: { stroke: '#6d28d9', strokeWidth: 2, opacity: 0.7 },
     className: 'edge-draw',
   }));
 

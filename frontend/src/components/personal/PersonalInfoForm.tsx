@@ -178,8 +178,8 @@ export default function PersonalInfoForm({ nodeId }: PersonalInfoFormProps) {
       setTimeout(() => setExtractMsg(null), 3000);
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setExtractMsg('图片大小不能超过 2MB');
+    if (file.size > 10 * 1024 * 1024) {
+      setExtractMsg('图片大小不能超过 10MB');
       setTimeout(() => setExtractMsg(null), 3000);
       return;
     }
@@ -403,7 +403,7 @@ export default function PersonalInfoForm({ nodeId }: PersonalInfoFormProps) {
               移除
             </button>
           )}
-          <span className="text-[9px] text-text-muted">JPG/PNG, ≤2MB</span>
+          <span className="text-[9px] text-text-muted">JPG/PNG, ≤10MB</span>
         </div>
       </div>
 
