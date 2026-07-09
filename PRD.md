@@ -50,6 +50,12 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 | US-18 选择性合并 Diff | ✅ | 逐字段接受/拒绝按钮，字段级 diff 渲染，全部接受/批量操作 |
 | US-19 一键安装脚本 | ✅ | install.sh（macOS/Linux）+ install.ps1（Windows），5 步引导 |
 | US-20 Windows 原生支持 | ✅ | Makefile.ps1 PowerShell 等效，路径兼容，.env 多级查找 |
+| US-21 左栏导航精简 | 📋 | 移除无功能项，badge 动态化，GlobalToolbar 统一联动 |
+| US-22 底部生成联动与缩略图 | 📋 | 底部按钮联动编辑器生成，完成后显示简历缩略图预览 |
+| US-23 节点位置持久化 | 📋 | localStorage 存储拖拽位置，重置布局按钮 |
+| US-24 简历个人头像 | 📋 | 默认字母头像 + 上传替换，6 套模板右上角方形头像 |
+| US-25 节点 hover tooltip | 📋 | 悬停 500ms 显示名称/类型/完整度/上游变更/时间 |
+| US-26 色彩增强与动画 | 📋 | 品牌色加深 + 渐变 + 3 种入场动画 + 5 种交互微动画 |
 
 ---
 
@@ -403,6 +409,7 @@ PDF 导出（reportlab，与预览一致）
 | **v1.1** | US-8~US-11：简历预览/模板 + 智能补全 + 版本Diff + AI导师 | ✅ 已完成 | 4-5 周 |
 | **v1.2** | US-12~US-16：个人信息管理 + 段落可排序 + 一键生成 + 信息完整性检测 + 模板配置化 | ✅ 已完成 | 3 周 |
 | **v1.3** | US-17~US-20：上游变更检测+选择性合并 + 一键安装脚本 + Windows 原生支持 | ✅ 已完成 | 2 周 |
+| **v1.4** | US-21~US-26：导航精简+生成联动+位置持久化+个人头像+节点tooltip+色彩动画 | 📋 规划中 | 3-4 周 |
 | **v2.0** | 开源模型本地运行(Ollama) + 模板市场 + 插件系统 + 移动端 | 📋 规划中 | +6 周 |
 
 ### Technical Risks
@@ -596,3 +603,252 @@ install.sh / install.ps1
 | 合并冲突复杂度 | 用户困惑 | 中 | 仅支持 personal_info，字段级粒度，不做内容段落合并 |
 | Windows 路径兼容 | 部分功能不可用 | 中 | 使用 os.path.join，不硬编码路径分隔符 |
 | 安装脚本兼容性 | 不同环境检测失败 | 中 | 分步骤执行，失败时提示手动操作 |
+
+---
+
+## v1.4 Product Requirements
+
+### Executive Summary
+
+**Problem**: v1.3 完成了核心功能和跨平台支持，但工作台 UI 体验存在多处缺陷：左栏导航项部分无功能且 badge 数字硬编码、底部"为该岗位动态生成"按钮无响应、节点位置拖拽后刷新丢失、简历缺少个人证件照、节点无 hover 预览、整体色彩偏淡缺乏动画。
+
+**Solution**: 精简左栏导航并接入动态数据，底部生成按钮联动编辑器并增加简历缩略图预览，localStorage 持久化节点位置，简历模板增加右上角方形头像（默认字母头像 + 上传替换），节点 hover tooltip 显示关键信息，增强品牌色彩饱和度并新增入场/交互动画。
+
+**Success Criteria**:
+- 左栏导航所有项均可点击且有实际功能，badge 数字与后端数据一致
+- 底部"为该岗位动态生成"点击后自动切换到编辑器 Tab 并触发生成流程，生成完成后底部显示简历缩略图预览
+- 用户拖拽节点后刷新页面，节点位置保持不变
+- 6 套简历模板均支持右上角方形头像，默认显示姓名首字母，用户可上传图片替换
+- 鼠标悬停版本树节点时显示 tooltip（名称/类型/完整度/上游变更/时间）
+- 新增至少 3 种入场动画 + 5 种交互微动画，视觉层次感明显提升
+
+### User Stories
+
+#### US-21：左栏导航精简与动态数据（A4）
+**As a** 求职者，**I want** 左栏导航所有项都可点击且有实际功能，badge 显示真实数量，**so that** 我能快速切换功能并了解项目状态。
+
+**Acceptance Criteria：**
+- [ ] 移除无功能的导航项（职位截图分析/技能差距分析/投递时间线/设置）
+- [ ] 保留导航项：总览面板（版本树）、简历版本分支（版本树）、个人知识库（知识库）
+- [ ] 导航项 badge 数字从后端动态获取（分支数 = 子节点数，知识库数 = 文档数）
+- [ ] 点击"总览面板"和"简历版本分支"都切换到版本树视图
+- [ ] 点击"个人知识库"切换到知识库视图
+- [ ] 顶部 GlobalToolbar 的 Tab 与左栏导航统一，去掉冗余 Tab，所有 Tab 联动中栏视图切换
+- [ ] 导航高亮状态与当前视图一致
+
+#### US-22：底部生成联动与简历缩略图预览（B3）
+**As a** 求职者，**I want** 点击底部"为该岗位动态生成"按钮后自动切换到编辑器并触发生成，生成后底部显示简历缩略图预览，**so that** 我不用手动切换 Tab 就能完成生成并查看效果。
+
+**Acceptance Criteria：**
+- [ ] 底部"为该岗位动态生成"按钮有 onClick 事件
+- [ ] 点击后自动切换到"编辑器"Tab
+- [ ] 自动触发生成流程（等同于编辑器中的"一键生成"）
+- [ ] 生成完成后，底部工具栏区域显示简历缩略图预览（A4 比例缩小渲染）
+- [ ] 缩略图可点击放大查看完整预览
+- [ ] 生成过程中显示进度指示（检索中 → 反思中 → 撰写中 → 完成）
+- [ ] 未选中节点时按钮禁用并提示"请先选择节点"
+- [ ] 未上传 JD 时按钮提示"请先在右栏上传 JD"
+
+#### US-23：节点位置 localStorage 持久化（B7）
+**As a** 求职者，**I want** 拖拽调整节点位置后刷新页面位置保持不变，**so that** 我不需要每次重新调整布局。
+
+**Acceptance Criteria：**
+- [ ] 用户拖拽节点后，位置存入 localStorage（key 格式：`node-position-{node_id}`）
+- [ ] 页面加载时优先读取 localStorage 中存储的位置
+- [ ] 首次加载（无 localStorage 数据）使用 layoutTree 默认布局
+- [ ] 新增节点时使用 layoutTree 计算的默认位置，不覆盖已有节点的存储位置
+- [ ] 提供"重置布局"按钮，清除 localStorage 并恢复默认布局
+- [ ] localStorage key 带版本前缀（`v1-`），避免数据结构变更时冲突
+
+#### US-24：简历个人头像（A5）
+**As a** 求职者，**I want** 简历右上角显示个人证件照，**so that** 简历更完整专业。
+
+**Acceptance Criteria：**
+- [ ] 默认显示姓名首字母的方形头像（如"张"显示"张"，背景色根据品牌色渐变）
+- [ ] 6 套模板均在右上角姓名区域渲染方形头像
+- [ ] 编辑器个人信息表单新增"头像"上传入口
+- [ ] 支持上传 JPG/PNG 图片，自动裁剪为方形
+- [ ] 上传图片限制大小 ≤ 2MB
+- [ ] 头像数据存入节点 `content_json.personal_info.avatar`（base64 编码）
+- [ ] 子节点创建时继承父节点的头像
+- [ ] PDF 导出包含头像
+- [ ] 未设置头像时使用默认字母头像
+
+#### US-25：版本树节点 hover tooltip（B8）
+**As a** 求职者，**I want** 鼠标悬停版本树节点时显示关键信息，**so that** 不用点击就能快速了解节点状态。
+
+**Acceptance Criteria：**
+- [ ] 鼠标悬停节点 500ms 后显示 tooltip
+- [ ] Tooltip 显示内容：节点名称、节点类型（主干/方向分支/公司节点）
+- [ ] Tooltip 显示内容：简历完整度评分（如有）
+- [ ] Tooltip 显示内容：上游变更状态（如有待合并变更，显示"有 N 项变更待合并"）
+- [ ] Tooltip 显示内容：创建时间 + 最后更新时间
+- [ ] 鼠标移开节点后 tooltip 消失
+- [ ] Tooltip 位置自动避让画布边缘
+- [ ] 三种节点类型（master/branch/company）均支持 tooltip
+
+#### US-26：色彩增强与动画效果（C4）
+**As a** 求职者，**I want** 更丰富的色彩搭配和动画效果，**so that** 工作台视觉体验更生动专业。
+
+**Acceptance Criteria：**
+- [ ] 品牌色饱和度提升（主蓝 #2563eb → #1d4ed8 加深，次紫 #7c3aed → #6d28d9 加深）
+- [ ] 节点/按钮/状态色增加渐变效果（节点背景渐变、按钮 hover 渐变加深）
+- [ ] 新增入场动画：页面加载 fade-in、面板展开 slide-up、节点出现 scale-in
+- [ ] 新增交互微动画：按钮 hover 缩放 + 阴影增强、卡片 hover 上浮、Tab 切换滑动指示器
+- [ ] 新增节点连线动画：新增边时绘制动画（stroke-dashoffset）
+- [ ] 新增状态切换动画：上游变更徽标 pulse 呼吸、完整度评分数字滚动
+- [ ] 动画使用 CSS @keyframes + Tailwind @theme --animate-* 令牌
+- [ ] 动画尊重 `prefers-reduced-motion` 系统设置
+- [ ] 动画不影响交互性能（使用 transform/opacity，避免触发 reflow）
+
+### Technical Specifications
+
+#### 左栏导航重构
+
+```
+当前状态：
+  LeftPanel（7 项，3 有功能，badge 硬编码）
+  GlobalToolbar（独立 Tab，不联动）
+
+目标状态：
+  LeftPanel（3 项，全部有功能，badge 动态）
+    ├── 总览面板 → version-tree 视图
+    ├── 简历版本分支 → version-tree 视图（badge = 分支节点数）
+    └── 个人知识库 → knowledge 视图（badge = 知识库文档数）
+  GlobalToolbar 统一为 LeftPanel 的镜像（或移除冗余 Tab）
+```
+
+**数据流：**
+- badge 数字从 `GET /api/tree`（节点数）和 `GET /api/knowledge/stats`（文档数）获取
+- 前端轮询或刷新时更新 badge
+
+#### 底部生成联动
+
+```
+用户点击"为该岗位动态生成"
+    ↓
+检查：是否选中节点？
+  ├── 否 → 提示"请先选择节点"
+  └── 是 → 检查：是否已上传 JD？
+      ├── 否 → 提示"请先在右栏上传 JD"
+      └── 是 → 切换到"编辑器"Tab
+                ↓
+              触发 handleGenerateFull()
+                ↓
+              生成过程中底部显示进度
+                ↓
+              生成完成 → 底部显示简历缩略图预览
+```
+
+**缩略图预览实现：**
+- 复用 ResumePreview 组件，包裹在缩放容器中（transform: scale(0.3)）
+- 点击缩略图弹出全屏模态预览
+
+#### 节点位置持久化
+
+```
+页面加载
+    ↓
+读取 localStorage（key: v1-node-position-{node_id}）
+    ↓
+有存储位置 → 使用存储位置
+无存储位置 → 使用 layoutTree 默认位置
+    ↓
+用户拖拽节点
+    ↓
+onNodeDragStop → 写入 localStorage
+    ↓
+刷新页面 → 读取 localStorage → 位置保持
+```
+
+**"重置布局"按钮：**
+- 清除所有 `v1-node-position-*` 的 localStorage key
+- 重新调用 layoutTree 生成默认布局
+
+#### 个人头像
+
+```
+个人信息表单
+    ├── 头像上传区（方形预览 + 上传按钮）
+    ├── 默认：姓名首字母 + 品牌色渐变背景
+    └── 上传：FileReader → base64 → 存入 personal_info.avatar
+
+简历模板渲染
+    └── 右上角方形头像区域
+        ├── 有 avatar → <img src={base64} />
+        └── 无 avatar → 默认字母头像
+```
+
+**数据库变更：**
+- `content_json.personal_info` 新增 `avatar` 字段（base64 字符串）
+- 无需表结构变更（JSON 字段扩展）
+
+#### 节点 hover tooltip
+
+```
+鼠标悬停节点 ≥ 500ms
+    ↓
+获取节点数据（node_id → 节点信息）
+    ↓
+渲染 Tooltip：
+  ┌─────────────────────┐
+  │ 节点名称             │
+  │ 类型：方向分支        │
+  │ 完整度：85/100       │
+  │ ⚠ 有 2 项变更待合并   │
+  │ 创建：2026-07-01     │
+  │ 更新：2026-07-09     │
+  └─────────────────────┘
+```
+
+**实现方案：** 自定义 React Tooltip 组件（不引入外部库），监听 mouseenter/mouseleave + setTimeout 500ms
+
+#### 色彩增强与动画
+
+**色彩调整（tokens.css）：**
+```css
+/* 品牌色加深 */
+--color-brand-primary: #1d4ed8;      /* 原 #2563eb */
+--color-brand-primary-hover: #1e40af; /* 原 #1d4ed8 */
+--color-brand-secondary: #6d28d9;     /* 原 #7c3aed */
+
+/* 新增渐变令牌 */
+--color-gradient-primary: linear-gradient(135deg, #1d4ed8, #6d28d9);
+--color-gradient-node-master: linear-gradient(135deg, #0891b2, #0e7490);
+--color-gradient-node-branch: linear-gradient(135deg, #6d28d9, #5b21b6);
+--color-gradient-node-company: linear-gradient(135deg, #d97706, #b45309);
+```
+
+**动画令牌（@theme）：**
+```css
+@theme {
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-pulse-badge: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes pulse-badge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+```
+
+### API 变更
+
+| 端点 | 方法 | 变更 | 版本 |
+|------|------|------|------|
+| `/api/tree` | GET | 返回数据新增 `completeness_score` 字段（用于 tooltip） | v1.4 |
+| `/api/tree/node/{id}/personal-info` | PUT | 支持 `avatar` 字段（base64） | v1.4 |
+
+> 无新增端点，仅扩展现有端点返回数据。
+
+### Risks
+
+| 风险 | 影响 | 概率 | 缓解措施 |
+|------|------|------|----------|
+| 缩略图预览性能 | 生成后渲染卡顿 | 中 | 缩略图使用 transform: scale，避免重渲染整个简历 |
+| localStorage 容量 | base64 头像数据过大 | 低 | 限制图片 ≤ 2MB，压缩为 200x200 base64 |
+| Tooltip 性能 | 大量节点 hover 卡顿 | 低 | 500ms 延迟 + 仅 hover 时渲染 |
+| 动画性能 | 低端设备卡顿 | 中 | 使用 transform/opacity，尊重 prefers-reduced-motion |
+| 色彩调整影响 | 现有样式冲突 | 中 | 保持变量名不变，仅调整值 |
