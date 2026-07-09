@@ -1,7 +1,8 @@
 // frontend/src/components/tree/VersionTree.tsx
 // React Flow 画布，从 GET /api/tree 获取版本树并渲染
+// US-23: 节点位置 localStorage 持久化，拖拽后刷新位置保持不变
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -18,6 +19,7 @@ import type { TreeData, ResumeNode } from '@/types/tree';
 import MasterNode, { type MasterNodeData } from './nodes/MasterNode';
 import BranchNode, { type BranchNodeData } from './nodes/BranchNode';
 import CompanyNode, { type CompanyNodeData } from './nodes/CompanyNode';
+import type { TooltipData } from './nodes/NodeTooltip';
 
 const nodeTypes = {
   master: MasterNode,
@@ -34,6 +36,43 @@ const X_COMPANY = 740;
 const BRANCH_GAP = 180;
 const COMPANY_GAP = 110;
 
+/** US-23: localStorage key 前缀（带版本号避免数据结构冲突） */
+const POSITION_KEY_PREFIX = 'v1-node-position-';
+
+/** US-23: 从 localStorage 读取节点位置 */
+function getStoredPosition(nodeId: string): { x: number; y: number } | null {
+  try {
+    const raw = localStorage.getItem(POSITION_KEY_PREFIX + nodeId);
+    if (!raw) return null;
+    const pos = JSON.parse(raw);
+    if (typeof pos.x === 'number' && typeof pos.y === 'number') return pos;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** US-23: 保存节点位置到 localStorage */
+function saveStoredPosition(nodeId: string, x: number, y: number): void {
+  try {
+    localStorage.setItem(POSITION_KEY_PREFIX + nodeId, JSON.stringify({ x, y }));
+  } catch {
+    // localStorage 满或禁用，静默忽略
+  }
+}
+
+/** US-23: 清除所有存储的节点位置 */
+function clearAllStoredPositions(): void {
+  try {
+    const keys = Object.keys(localStorage).filter((k) =>
+      k.startsWith(POSITION_KEY_PREFIX),
+    );
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // 静默忽略
+  }
+}
+
 interface VersionTreeProps {
   /** 变化时触发重新拉取版本树（由上传成功后递增） */
   refreshKey?: number;
@@ -41,6 +80,21 @@ interface VersionTreeProps {
   onNodeSelect?: (node: ResumeNode) => void;
   /** 版本树加载完成时回调（供父层回溯路径 / 父选项） */
   onTreeLoad?: (tree: TreeData) => void;
+}
+
+/** US-25: 构建节点 tooltip 数据 */
+function buildTooltipData(n: ResumeNode): TooltipData {
+  const typeLabel =
+    n.node_type === 'master' ? '主干' :
+    n.node_type === 'branch' ? '方向分支' :
+    '公司节点';
+  return {
+    label: n.title || n.node_id,
+    typeLabel,
+    upstreamCount: n.has_upstream_update ? 1 : 0,
+    createdAt: n.created_at,
+    updatedAt: n.updated_at,
+  };
 }
 
 /** 根据节点类型映射为 ReactFlow Node data */
@@ -53,17 +107,18 @@ function toFlowNode(n: ResumeNode, position: { x: number; y: number }): Node {
     selectable: true,
     connectable: false,
   };
+  const tooltipData = buildTooltipData(n);
 
   if (n.node_type === 'master') {
     return {
       ...base,
-      data: { label: 'master', sublabel: 'main' } as MasterNodeData,
+      data: { label: 'master', sublabel: 'main', tooltipData } as MasterNodeData,
     };
   }
   if (n.node_type === 'branch') {
     return {
       ...base,
-      data: { label: n.title, direction: n.direction ?? '', has_upstream_update: n.has_upstream_update ?? false } as BranchNodeData,
+      data: { label: n.title, direction: n.direction ?? '', has_upstream_update: n.has_upstream_update ?? false, tooltipData } as BranchNodeData,
     };
   }
   // company: title 形如 "Tencent 安全研究员"
@@ -75,11 +130,13 @@ function toFlowNode(n: ResumeNode, position: { x: number; y: number }): Node {
       company: company,
       role: rest.join(' '),
       has_upstream_update: n.has_upstream_update ?? false,
+      tooltipData,
     } as CompanyNodeData,
   };
 }
 
-/** 计算三层布局位置（master 居中，branch / company 各自垂直居中分布） */
+/** 计算三层布局位置（master 居中，branch / company 各自垂直居中分布）
+ *  US-23: 优先读取 localStorage 中存储的位置 */
 function layoutTree(tree: TreeData): { nodes: Node[]; edges: Edge[] } {
   const masters = tree.nodes.filter((n) => n.node_type === 'master');
   const branches = tree.nodes.filter((n) => n.node_type === 'branch');
@@ -89,19 +146,22 @@ function layoutTree(tree: TreeData): { nodes: Node[]; edges: Edge[] } {
 
   // master：取第一个，垂直居中于 0
   masters.forEach((n, i) => {
-    nodes.push(toFlowNode(n, { x: X_MASTER, y: i * BRANCH_GAP }));
+    const stored = getStoredPosition(n.node_id);
+    nodes.push(toFlowNode(n, stored ?? { x: X_MASTER, y: i * BRANCH_GAP }));
   });
 
   // branch：垂直居中分布
   const branchOffset = (branches.length - 1) * (BRANCH_GAP / 2);
   branches.forEach((n, i) => {
-    nodes.push(toFlowNode(n, { x: X_BRANCH, y: i * BRANCH_GAP - branchOffset }));
+    const stored = getStoredPosition(n.node_id);
+    nodes.push(toFlowNode(n, stored ?? { x: X_BRANCH, y: i * BRANCH_GAP - branchOffset }));
   });
 
   // company：垂直居中分布
   const companyOffset = (companies.length - 1) * (COMPANY_GAP / 2);
   companies.forEach((n, i) => {
-    nodes.push(toFlowNode(n, { x: X_COMPANY, y: i * COMPANY_GAP - companyOffset }));
+    const stored = getStoredPosition(n.node_id);
+    nodes.push(toFlowNode(n, stored ?? { x: X_COMPANY, y: i * COMPANY_GAP - companyOffset }));
   });
 
   const edges: Edge[] = tree.edges.map((e, i) => ({
@@ -110,7 +170,8 @@ function layoutTree(tree: TreeData): { nodes: Node[]; edges: Edge[] } {
     target: e.target,
     type: 'smoothstep',
     animated: false,
-    style: { stroke: '#a78bfa', strokeWidth: 1.8, opacity: 0.5 },
+    style: { stroke: '#6d28d9', strokeWidth: 1.8, opacity: 0.5 },
+    className: 'edge-draw',
   }));
 
   return { nodes, edges };
@@ -124,6 +185,8 @@ export default function VersionTree({
   const [tree, setTree] = useState<TreeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // US-23: 重置布局触发器
+  const [resetKey, setResetKey] = useState(0);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -151,13 +214,27 @@ export default function VersionTree({
     };
   }, [refreshKey, onTreeLoad]);
 
-  // 当 tree 数据变化时，重新计算布局并更新 nodes/edges
+  // 当 tree 数据变化或重置布局时，重新计算布局并更新 nodes/edges
   useEffect(() => {
     if (!tree) return;
     const { nodes: flowNodes, edges: flowEdges } = layoutTree(tree);
     setNodes(flowNodes);
     setEdges(flowEdges);
-  }, [tree, setNodes, setEdges]);
+  }, [tree, setNodes, setEdges, resetKey]);
+
+  // US-23: 节点拖拽结束后保存位置
+  const onNodeDragStop = useCallback(
+    (_event: MouseEvent | TouchEvent, flowNode: Node) => {
+      saveStoredPosition(flowNode.id, flowNode.position.x, flowNode.position.y);
+    },
+    [],
+  );
+
+  // US-23: 重置布局
+  const handleResetLayout = useCallback(() => {
+    clearAllStoredPositions();
+    setResetKey((k) => k + 1);
+  }, []);
 
   // 加载中
   if (loading) {
@@ -201,6 +278,7 @@ export default function VersionTree({
           const resumeNode = tree.nodes.find((n) => n.node_id === flowNode.id);
           if (resumeNode) onNodeSelect(resumeNode);
         }}
+        onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}
         nodesDraggable
         fitView
@@ -215,34 +293,16 @@ export default function VersionTree({
             border: '1px solid #e2e8f0',
             borderRadius: '6px',
           }}
-          showInteractive={false}
         />
       </ReactFlow>
 
-      {/* Legend */}
-      <div className="absolute bottom-3 left-4 flex gap-5 text-xs text-text-tertiary bg-bg-secondary border border-border-subtle rounded-md px-4 py-2 z-10">
-        <div className="flex items-center gap-1.5">
-          <div
-            className="w-2 h-2 rounded-full"
-            style={{ background: 'var(--color-node-master)', boxShadow: '0 0 6px var(--color-node-master)' }}
-          />
-          <span>主干节点</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div
-            className="w-2 h-2 rounded-full"
-            style={{ background: 'var(--color-node-branch)', boxShadow: '0 0 6px var(--color-node-branch)' }}
-          />
-          <span>方向分支</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div
-            className="w-2 h-2 rounded-full"
-            style={{ background: 'var(--color-node-company)', boxShadow: '0 0 6px var(--color-node-company)' }}
-          />
-          <span>公司节点</span>
-        </div>
-      </div>
+      {/* US-23: 重置布局按钮 */}
+      <button
+        onClick={handleResetLayout}
+        className="absolute top-3 right-3 z-10 px-3 py-1.5 text-xs bg-white text-text-secondary border border-border-default rounded-md cursor-pointer hover:bg-bg-hover hover:text-text-primary transition-all shadow-sm"
+      >
+        重置布局
+      </button>
     </div>
   );
 }

@@ -35,6 +35,8 @@ export interface PersonalInfo {
   job_intention: JobIntention;
   education: EducationItem[];
   summary: string;
+  /** US-24: 头像 base64 编码（data URI） */
+  avatar: string;
 }
 
 /** 创建空个人信息 */
@@ -58,5 +60,6 @@ export function emptyPersonalInfo(): PersonalInfo {
     },
     education: [],
     summary: '',
+    avatar: '',
   };
 }

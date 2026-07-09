@@ -22,17 +22,17 @@
   --color-text-muted: #94a3b8;
   --color-text-inverse: #fafbfc;
 
-  --color-brand-primary: #2563eb;
-  --color-brand-primary-hover: #1d4ed8;
-  --color-brand-primary-muted: rgba(37, 99, 235, 0.08);
-  --color-brand-primary-glow: rgba(37, 99, 235, 0.12);
+  --color-brand-primary: #1d4ed8;
+  --color-brand-primary-hover: #1e40af;
+  --color-brand-primary-muted: rgba(29, 78, 216, 0.08);
+  --color-brand-primary-glow: rgba(29, 78, 216, 0.12);
 
-  --color-brand-secondary: #7c3aed;
-  --color-brand-secondary-muted: rgba(124, 58, 237, 0.08);
-  --color-brand-secondary-glow: rgba(124, 58, 237, 0.12);
+  --color-brand-secondary: #6d28d9;
+  --color-brand-secondary-muted: rgba(109, 40, 217, 0.08);
+  --color-brand-secondary-glow: rgba(109, 40, 217, 0.12);
 
-  --color-accent-gradient-start: #2563eb;
-  --color-accent-gradient-end: #7c3aed;
+  --color-accent-gradient-start: #1d4ed8;
+  --color-accent-gradient-end: #6d28d9;
 
   /* Git tree node colors */
   --color-node-master: #0891b2;
@@ -145,12 +145,12 @@
   --color-text-muted: #94a3b8;
   --color-text-inverse: #fafbfc;
 
-  --color-brand-primary: #2563eb;
-  --color-brand-primary-hover: #1d4ed8;
-  --color-brand-secondary: #7c3aed;
+  --color-brand-primary: #1d4ed8;
+  --color-brand-primary-hover: #1e40af;
+  --color-brand-secondary: #6d28d9;
 
-  --color-accent-gradient-start: #2563eb;
-  --color-accent-gradient-end: #7c3aed;
+  --color-accent-gradient-start: #1d4ed8;
+  --color-accent-gradient-end: #6d28d9;
 
   /* Git tree node colors */
   --color-node-master: #0891b2;
@@ -175,7 +175,96 @@
   --radius-xl: 12px;
 
   /* 阴影 */
-  --shadow-glow-primary: 0 0 20px rgba(37, 99, 235, 0.08);
-  --shadow-glow-secondary: 0 0 20px rgba(124, 58, 237, 0.08);
+  --shadow-glow-primary: 0 0 20px rgba(29, 78, 216, 0.1);
+  --shadow-glow-secondary: 0 0 20px rgba(109, 40, 217, 0.1);
   --shadow-glow-master: 0 0 20px rgba(8, 145, 178, 0.1);
+
+  /* US-26: 动画令牌 → 生成 animate-fade-in / animate-slide-up 等工具类 */
+  --animate-fade-in: fade-in 300ms ease-out forwards;
+  --animate-slide-up: slide-up 350ms ease-out forwards;
+  --animate-scale-in: scale-in 250ms ease-out forwards;
+  --animate-pulse-badge: pulse-badge 2s ease-in-out infinite;
+  --animate-edge-draw: edge-draw 600ms ease-out forwards;
+}
+
+/* === US-26: @keyframes 定义 === */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-badge {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+  50% { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(249, 115, 22, 0); }
+}
+
+@keyframes edge-draw {
+  from { stroke-dashoffset: 200; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* US-26: 交互微动画工具类 */
+.hover-lift {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.hover-scale {
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.hover-scale:hover {
+  transform: scale(1.03);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* US-26: 上游变更徽标呼吸动画 */
+.badge-pulse {
+  animation: var(--animate-pulse-badge);
+}
+
+/* US-26: 节点入场动画 */
+.node-enter {
+  animation: var(--animate-scale-in);
+}
+
+/* US-26: 面板展开动画 */
+.panel-enter {
+  animation: var(--animate-slide-up);
+}
+
+/* US-26: 页面加载淡入 */
+.page-enter {
+  animation: var(--animate-fade-in);
+}
+
+/* US-26: 新边绘制动画 */
+.edge-draw {
+  stroke-dasharray: 200;
+  animation: var(--animate-edge-draw);
+}
+
+/* === US-26: 尊重 prefers-reduced-motion === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

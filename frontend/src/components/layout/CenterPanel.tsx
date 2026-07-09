@@ -24,7 +24,7 @@ const TAB_PILLS = ['版本树', '编辑器', 'Diff 对比'] as const;
 
 /** API 调用失败时的硬编码 fallback 模板 */
 const FALLBACK_TEMPLATES: TemplateInfo[] = [
-  { id: 'modern', name: '现代简约', description: '简洁现代风，分隔线 + 左对齐标题', theme_color: '#2563eb' },
+  { id: 'modern', name: '现代简约', description: '简洁现代风，分隔线 + 左对齐标题', theme_color: '#1d4ed8' },
   { id: 'classic', name: '经典色块', description: '色块标题条 + 白字标题，沉稳大气', theme_color: '#1C487C' },
   { id: 'tech', name: '紧凑技术风', description: '页边距小、字号紧凑，适合技术岗', theme_color: '#0F766E' },
   { id: 'minimal', name: '极简白', description: '单栏大量留白，无色块无分隔线', theme_color: '#333333' },
@@ -222,6 +222,9 @@ export default function CenterPanel({
   const [generateMsg, setGenerateMsg] = useState<string | null>(null);
   // US-15: 完整性检测刷新触发器
   const [completenessRefreshKey, setCompletenessRefreshKey] = useState(0);
+  // US-22: 底部生成完成后显示缩略图预览
+  const [showThumbnail, setShowThumbnail] = useState(false);
+  const [showFullPreview, setShowFullPreview] = useState(false);
 
   const reloadSelectedNode = useCallback(() => {
     if (!selectedNode) return;
@@ -243,10 +246,12 @@ export default function CenterPanel({
     }
     setGenerating(true);
     setGenerateMsg(null);
+    setShowThumbnail(false);
     try {
       await generateFull(selectedNode.node_id, structuredJD ?? undefined);
       reloadSelectedNode();
       setGenerateMsg('一键生成完成');
+      setShowThumbnail(true); // US-22: 生成完成后显示缩略图
     } catch (err: unknown) {
       setGenerateMsg(err instanceof Error ? err.message : '生成失败');
     } finally {
@@ -254,6 +259,24 @@ export default function CenterPanel({
       setTimeout(() => setGenerateMsg(null), 3000);
     }
   }, [selectedNode, generating, reloadSelectedNode, structuredJD]);
+
+  // US-22: 底部"为该岗位动态生成"按钮 → 切换到编辑器 Tab + 触发生成
+  const handleBottomGenerate = useCallback(async () => {
+    if (!selectedNode) {
+      setGenerateMsg('请先选择一个节点');
+      setTimeout(() => setGenerateMsg(null), 3000);
+      return;
+    }
+    if (!structuredJD) {
+      setGenerateMsg('请先在右栏上传 JD 招聘信息');
+      setTimeout(() => setGenerateMsg(null), 3000);
+      return;
+    }
+    // 切换到编辑器 Tab
+    setActiveTab('编辑器');
+    // 触发生成
+    handleGenerateFull();
+  }, [selectedNode, structuredJD, handleGenerateFull]);
 
   const handleRegenerateSection = useCallback(
     async (section: string) => {
@@ -585,17 +608,25 @@ export default function CenterPanel({
               新建分支
             </button>
             <button
-              className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-medium border-none rounded-md cursor-pointer font-body transition-all hover:brightness-110 hover:-translate-y-px"
+              onClick={handleBottomGenerate}
+              disabled={!selectedNode || generating}
+              className="inline-flex items-center gap-2 px-5 py-2 text-white text-sm font-medium border-none rounded-md cursor-pointer font-body transition-all hover:brightness-110 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               style={{
                 background:
                   'linear-gradient(135deg, var(--color-accent-gradient-start), var(--color-accent-gradient-end))',
                 boxShadow: 'var(--shadow-glow-primary)',
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z" />
-              </svg>
-              为该岗位动态生成
+              {generating ? (
+                <svg className="animate-spin" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 1a7 7 0 1 0 7 7" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1.5l1.7 3.5 3.8.6-2.8 2.7.7 3.8L8 10.1 4.6 12.1l.7-3.8L2.5 5.6l3.8-.6z" />
+                </svg>
+              )}
+              {generating ? '生成中...' : '为该岗位动态生成'}
             </button>
             <button className="inline-flex items-center gap-2 px-5 py-2 bg-transparent text-text-secondary text-sm font-medium border border-border-default rounded-md cursor-pointer transition-all font-body hover:border-border-strong hover:text-text-primary hover:bg-bg-hover">
               <svg
@@ -629,6 +660,70 @@ export default function CenterPanel({
             </button>
             {/* US-8：模板选择已移至"编辑器"Tab，此处不再重复展示 */}
           </div>
+
+          {/* US-22: 生成完成后底部缩略图预览 */}
+          {showThumbnail && selectedNode && (
+            <div className="border-t border-border-subtle px-5 py-3 bg-bg-tertiary">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-text-secondary">简历缩略图预览</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowFullPreview(true)}
+                    className="text-xs px-3 py-1 rounded-md bg-brand-primary text-white border-none cursor-pointer hover:brightness-110 transition-all"
+                  >
+                    放大查看
+                  </button>
+                  <button
+                    onClick={() => setShowThumbnail(false)}
+                    className="text-xs px-3 py-1 rounded-md bg-transparent text-text-tertiary border border-border-default cursor-pointer hover:text-text-primary transition-all"
+                  >
+                    关闭
+                  </button>
+                </div>
+              </div>
+              <div
+                className="overflow-hidden rounded-md border border-border-subtle bg-white mx-auto"
+                style={{ width: 200, height: 283, pointerEvents: 'none' }}
+              >
+                <div style={{ transform: 'scale(0.26)', transformOrigin: 'top left', width: 769 }}>
+                  <ResumePreview
+                    resumeData={selectedNode.content_json ?? {}}
+                    templateId={templateId}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* US-22: 全屏预览模态 */}
+          {showFullPreview && selectedNode && (
+            <div
+              className="fixed inset-0 z-[9999] flex items-center justify-center"
+              style={{ background: 'var(--color-bg-overlay)' }}
+              onClick={() => setShowFullPreview(false)}
+            >
+              <div
+                className="bg-white rounded-lg shadow-xl overflow-auto max-h-[90vh] max-w-[90vw]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between px-4 py-2 border-b border-border-subtle sticky top-0 bg-white z-10">
+                  <span className="text-sm font-medium text-text-primary">简历完整预览</span>
+                  <button
+                    onClick={() => setShowFullPreview(false)}
+                    className="text-text-tertiary hover:text-text-primary text-sm cursor-pointer"
+                  >
+                    关闭
+                  </button>
+                </div>
+                <div className="p-4">
+                  <ResumePreview
+                    resumeData={selectedNode.content_json ?? {}}
+                    templateId={templateId}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 

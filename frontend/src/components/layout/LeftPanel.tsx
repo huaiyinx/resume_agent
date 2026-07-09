@@ -1,9 +1,8 @@
 // frontend/src/components/layout/LeftPanel.tsx
-// 左栏：品牌区 + 导航列表（工作台/版本树/知识库/JD分析/Gap/时间线）
+// 左栏：品牌区 + 导航列表（精简为 3 项，badge 动态化）
 //       + 上传区（简历+知识素材）+ 知识库状态
 //
-// US-3：第二个 UploadZone 接入 uploadKnowledge；新增 onNavigate 回调；
-//       KnowledgeStatus 通过 refreshKey 接收外部刷新信号。
+// US-21：移除无功能导航项，badge 从后端动态获取，activeView 同步
 
 import { useState } from 'react';
 import UploadZone from '@/components/common/UploadZone';
@@ -13,25 +12,16 @@ import SectionOrderPanel from '@/components/section/SectionOrderPanel';
 import { uploadKnowledge } from '@/lib/api';
 import type { ActiveView } from '@/types/knowledge';
 import type { SectionItem } from '@/types/section';
+import type { ResumeNode } from '@/types/tree';
 
-/** 导航项：label 为展示文案，view 为对应的中栏视图（可选） */
+/** 导航项：label 为展示文案，view 为对应的中栏视图 */
 interface NavItem {
   label: string;
   icon: string;
-  badge?: string;
-  active?: boolean;
-  view?: ActiveView;
+  view: ActiveView;
+  /** 动态 badge 数字，undefined 时不显示 */
+  badge?: number;
 }
-
-const NAV_ITEMS: NavItem[] = [
-  { label: '总览面板', icon: 'overview', view: 'version-tree', active: true },
-  { label: '简历版本分支', icon: 'tree', badge: '3', view: 'version-tree' },
-  { label: '个人知识库 (RAG)', icon: 'kb', badge: '12', view: 'knowledge' },
-  { label: '职位截图分析', icon: 'jd' },
-  { label: '技能差距分析', icon: 'gap' },
-  { label: '投递时间线', icon: 'timeline', badge: '5' },
-  { label: '设置', icon: 'settings' },
-];
 
 const NAV_ICONS: Record<string, React.ReactNode> = {
   overview: (
@@ -53,30 +43,6 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
       <path d="M8 2l1.5 3H14l-2.5 2 1 3.5L8 8.5 3.5 10.5l1-3.5L2 5h4.5z" />
     </svg>
   ),
-  jd: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="3" width="12" height="10" rx="1.5" />
-      <path d="M2 6h12" />
-      <circle cx="11" cy="9" r="1.5" />
-    </svg>
-  ),
-  gap: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M2 8h2l2-4 2 8 2-6 2 2h4" />
-    </svg>
-  ),
-  timeline: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="8" cy="8" r="6" />
-      <path d="M8 4v4l3 2" />
-    </svg>
-  ),
-  settings: (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="8" cy="8" r="2" />
-      <path d="M13.4 10a1.65 1.65 0 0 0 .3 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.3 1.65 1.65 0 0 0-1 1.51V16a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 3 14.64a1.65 1.65 0 0 0-1.82.3l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 .6 10.3 1.65 1.65 0 0 0-.9 9.3V8.7a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.3-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 5 2.64V2a2 2 0 0 1 4 0v.64" />
-    </svg>
-  ),
 };
 
 interface LeftPanelProps {
@@ -88,6 +54,10 @@ interface LeftPanelProps {
   knowledgeRefreshKey?: number;
   /** 导航项点击回调，通知父组件切换中栏视图 */
   onNavigate?: (view: ActiveView) => void;
+  /** 当前激活的视图（用于同步导航高亮） */
+  activeView?: ActiveView;
+  /** 版本树节点列表（用于计算分支 badge 数字） */
+  treeNodes?: ResumeNode[];
   /** 当前选中的版本树节点 ID（US-12 个人信息） */
   selectedNodeId?: string | null;
   /** US-13: section_order 保存后通知外部更新 selectedNode */
@@ -99,16 +69,29 @@ export default function LeftPanel({
   onKnowledgeRefresh,
   knowledgeRefreshKey = 0,
   onNavigate,
+  activeView = 'version-tree',
+  treeNodes = [],
   selectedNodeId = null,
   onSectionOrderUpdated,
 }: LeftPanelProps) {
-  const [activeNav, setActiveNav] = useState('总览面板');
+  // 知识库文档数（从 KnowledgeStatus 回调获取）
+  const [knowledgeDocCount, setKnowledgeDocCount] = useState(0);
+
+  // 动态计算 badge
+  const branchCount = treeNodes.filter((n) => n.node_type !== 'master').length;
+
+  const navItems: NavItem[] = [
+    { label: '总览面板', icon: 'overview', view: 'version-tree' },
+    { label: '简历版本分支', icon: 'tree', view: 'version-tree', badge: branchCount },
+    { label: '个人知识库', icon: 'kb', view: 'knowledge', badge: knowledgeDocCount },
+  ];
+
+  // 根据 activeView 决定高亮项：version-tree 高亮"总览面板"
+  const activeLabel =
+    activeView === 'knowledge' ? '个人知识库' : '总览面板';
 
   function handleNavClick(item: NavItem) {
-    setActiveNav(item.label);
-    if (item.view) {
-      onNavigate?.(item.view);
-    }
+    onNavigate?.(item.view);
   }
 
   return (
@@ -142,27 +125,27 @@ export default function LeftPanel({
 
       {/* Navigation */}
       <nav className="p-2 px-3">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <div
             key={item.label}
             onClick={() => handleNavClick(item)}
             className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all mb-0.5 border-l-2 text-sm ${
-              activeNav === item.label
+              activeLabel === item.label
                 ? 'bg-brand-primary-muted text-brand-primary border-brand-primary font-medium'
                 : 'text-text-secondary border-transparent hover:bg-bg-hover hover:text-text-primary'
             }`}
           >
             <span
               className="w-4 h-4 flex-shrink-0"
-              style={{ opacity: activeNav === item.label ? 1 : 0.7 }}
+              style={{ opacity: activeLabel === item.label ? 1 : 0.7 }}
             >
               {NAV_ICONS[item.icon]}
             </span>
             <span>{item.label}</span>
-            {item.badge && (
+            {item.badge !== undefined && item.badge > 0 && (
               <span
                 className={`ml-auto font-mono text-xs px-2 rounded-full min-w-[20px] text-center ${
-                  activeNav === item.label
+                  activeLabel === item.label
                     ? 'bg-brand-primary text-white'
                     : 'bg-bg-elevated text-text-tertiary'
                 }`}
@@ -215,7 +198,10 @@ export default function LeftPanel({
       <SectionOrderPanel nodeId={selectedNodeId} onOrderUpdated={onSectionOrderUpdated} />
 
       {/* Knowledge base status */}
-      <KnowledgeStatus refreshKey={knowledgeRefreshKey} />
+      <KnowledgeStatus
+        refreshKey={knowledgeRefreshKey}
+        onStatsLoaded={(stats) => setKnowledgeDocCount(stats.document_count)}
+      />
     </aside>
   );
 }

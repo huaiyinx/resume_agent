@@ -15,6 +15,7 @@ ATS（Applicant Tracking System）友好意味着：
 
 from __future__ import annotations
 
+import base64
 import io
 import logging
 from typing import Any
@@ -27,6 +28,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.platypus import (
     HRFlowable,
+    Image,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -346,24 +348,83 @@ def build_pdf(
     story: list[Any] = []
 
     # === 标题 ===
-    name = resume_data.get("name", "简历")
-    story.append(Paragraph(_escape_xml(name), styles["name"]))
+    # US-24: 从 personal_info 提取 name / avatar，兼容顶层 name
+    personal_info = resume_data.get("personal_info", {})
+    if not isinstance(personal_info, dict):
+        personal_info = {}
+    name = resume_data.get("name", "")
+    if not name:
+        contact_info = personal_info.get("contact", {})
+        if isinstance(contact_info, dict):
+            name = contact_info.get("name", "")
+    if not name:
+        name = "简历"
 
-    # 联系信息
-    contact_parts = []
-    if resume_data.get("email"):
-        contact_parts.append(resume_data["email"])
-    if resume_data.get("phone"):
-        contact_parts.append(resume_data["phone"])
-    if job_title:
-        contact_parts.append(f"目标岗位: {job_title}")
-    if contact_parts:
-        story.append(
-            Paragraph(
-                " | ".join(_escape_xml(str(p)) for p in contact_parts),
-                styles["contact"],
+    avatar_b64 = personal_info.get("avatar", "")
+
+    # US-24: 如有头像，用 Table 左姓名右头像布局
+    avatar_flowable: Any = None
+    if avatar_b64 and isinstance(avatar_b64, str):
+        try:
+            # 去除 data URI 前缀
+            raw = avatar_b64.split(",", 1)[-1] if "," in avatar_b64 else avatar_b64
+            img_bytes = base64.b64decode(raw)
+            img_buf = io.BytesIO(img_bytes)
+            avatar_flowable = Image(img_buf, width=40, height=40)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("avatar decode failed: %s", exc)
+
+    if avatar_flowable:
+        # 左侧姓名+联系方式，右侧头像
+        name_cell = [
+            Paragraph(_escape_xml(name), styles["name"]),
+        ]
+        contact_parts = []
+        if resume_data.get("email"):
+            contact_parts.append(resume_data["email"])
+        if resume_data.get("phone"):
+            contact_parts.append(resume_data["phone"])
+        if job_title:
+            contact_parts.append(f"目标岗位: {job_title}")
+        if contact_parts:
+            name_cell.append(
+                Paragraph(
+                    " | ".join(_escape_xml(str(p)) for p in contact_parts),
+                    styles["contact"],
+                )
             )
+        header_table = Table(
+            [[name_cell, avatar_flowable]],
+            colWidths=[full_width - 44, 44],
         )
+        header_table.setStyle(
+            TableStyle([
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ])
+        )
+        story.append(header_table)
+    else:
+        story.append(Paragraph(_escape_xml(name), styles["name"]))
+        # 联系信息
+        contact_parts = []
+        if resume_data.get("email"):
+            contact_parts.append(resume_data["email"])
+        if resume_data.get("phone"):
+            contact_parts.append(resume_data["phone"])
+        if job_title:
+            contact_parts.append(f"目标岗位: {job_title}")
+        if contact_parts:
+            story.append(
+                Paragraph(
+                    " | ".join(_escape_xml(str(p)) for p in contact_parts),
+                    styles["contact"],
+                )
+            )
 
     story.append(HRFlowable(width="100%", thickness=0.5, color=_COLOR_LIGHT))
     story.append(Spacer(1, 2 * mm))

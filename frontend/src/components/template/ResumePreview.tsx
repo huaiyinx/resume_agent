@@ -24,7 +24,7 @@ interface ResumePreviewProps {
 }
 
 const THEME_COLORS: Record<string, string> = {
-  modern: '#2563eb',
+  modern: '#1d4ed8',
   classic: '#1C487C',
   tech: '#0F766E',
   minimal: '#333333',
@@ -121,6 +121,53 @@ function extractSummary(data: Record<string, unknown>): string {
     if (summary) return summary;
   }
   return asString(data.summary);
+}
+
+/** US-24: 提取头像 base64（从 personal_info.avatar） */
+function extractAvatar(data: Record<string, unknown>): string {
+  const pi = data.personal_info;
+  if (pi && typeof pi === 'object' && !Array.isArray(pi)) {
+    return asString((pi as Record<string, unknown>).avatar);
+  }
+  return '';
+}
+
+/** US-24: 头像组件 — 有图片显示图片，否则显示姓名首字母 + 品牌色渐变 */
+function Avatar({
+  avatar,
+  name,
+  themeColor,
+  size = 56,
+}: {
+  avatar: string;
+  name: string;
+  themeColor: string;
+  size?: number;
+}) {
+  const px = `${size}px`;
+  if (avatar) {
+    return (
+      <img
+        src={avatar}
+        alt={name || '头像'}
+        style={{ width: px, height: px }}
+        className="rounded-md object-cover border border-white/30 shadow-sm flex-shrink-0"
+      />
+    );
+  }
+  const firstChar = name?.charAt(0) || '?';
+  return (
+    <div
+      style={{
+        width: px,
+        height: px,
+        background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`,
+      }}
+      className="rounded-md flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-sm"
+    >
+      {firstChar}
+    </div>
+  );
 }
 
 /** 提取教育背景 */
@@ -600,6 +647,7 @@ export default function ResumePreview({
   const name = extractName(resumeData);
   const contactParts = extractContactParts(resumeData);
   const summary = extractSummary(resumeData);
+  const avatar = extractAvatar(resumeData);
   const experiences = asObjectArray(resumeData.experience);
   const projects = asObjectArray(resumeData.projects);
   const education = extractEducation(resumeData);
@@ -853,9 +901,12 @@ export default function ResumePreview({
   // US-16: 姓名区域渲染
   const renderNameArea = () => {
     if (templateId === 'modern') {
-      // modern: 蓝色顶栏 + 白字姓名
+      // modern: 蓝色顶栏 + 白字姓名 + 右上角头像
       return (
-        <div className="px-6 py-4 text-center" style={{ backgroundColor: themeColor }}>
+        <div className="px-6 py-4 text-center relative" style={{ backgroundColor: themeColor }}>
+          <div className="absolute top-3 right-4">
+            <Avatar avatar={avatar} name={name} themeColor={themeColor} size={52} />
+          </div>
           <h1 className="text-2xl font-bold text-white mb-1">{name}</h1>
           {contactParts.length > 0 && (
             <div className="text-xs text-white/80">{contactParts.join(' · ')}</div>
@@ -864,9 +915,12 @@ export default function ResumePreview({
       );
     }
     if (templateId === 'classic') {
-      // classic: 蓝色底栏 + 姓名居中 + 底部色条
+      // classic: 蓝色底栏 + 姓名居中 + 底部色条 + 右上角头像
       return (
-        <div className="pb-3 mb-3 border-b-4" style={{ borderColor: themeColor }}>
+        <div className="pb-3 mb-3 border-b-4 relative" style={{ borderColor: themeColor }}>
+          <div className="absolute top-0 right-0">
+            <Avatar avatar={avatar} name={name} themeColor={themeColor} size={52} />
+          </div>
           <h1 className="text-center text-2xl font-bold mb-1" style={{ color: themeColor }}>{name}</h1>
           {contactParts.length > 0 && (
             <div className="text-center text-xs text-text-tertiary">{contactParts.join(' | ')}</div>
@@ -875,22 +929,26 @@ export default function ResumePreview({
       );
     }
     if (templateId === 'tech') {
-      // tech: 左侧色条 + 紧凑布局
+      // tech: 左侧色条 + 紧凑布局 + 右上角头像
       return (
         <div className="flex items-center gap-3 px-4 py-2 border-l-4 mb-3" style={{ borderColor: themeColor }}>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold text-text-primary">{name}</h1>
             {contactParts.length > 0 && (
               <div className="text-xs text-text-tertiary mt-0.5">{contactParts.join(' · ')}</div>
             )}
           </div>
+          <Avatar avatar={avatar} name={name} themeColor={themeColor} size={48} />
         </div>
       );
     }
     if (templateId === 'minimal') {
-      // minimal: 大量留白 + 细线分隔
+      // minimal: 大量留白 + 细线分隔 + 右上角头像
       return (
-        <div className="mb-6 pb-3 border-b border-gray-200">
+        <div className="mb-6 pb-3 border-b border-gray-200 relative">
+          <div className="absolute top-0 right-0">
+            <Avatar avatar={avatar} name={name} themeColor={themeColor} size={48} />
+          </div>
           <h1 className="text-center text-xl font-light text-text-primary tracking-wide">{name}</h1>
           {contactParts.length > 0 && (
             <div className="text-center text-xs text-text-muted mt-1 tracking-wider">{contactParts.join('  /  ')}</div>
@@ -899,24 +957,30 @@ export default function ResumePreview({
       );
     }
     if (templateId === 'two_column') {
-      // two_column → 暖橙卡片风: 暖橙渐变顶栏
+      // two_column → 暖橙卡片风: 暖橙渐变顶栏 + 右上角头像
       return (
         <div
-          className="px-5 py-4 rounded-t-lg"
+          className="px-5 py-4 rounded-t-lg flex items-center justify-between"
           style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)` }}
         >
-          <h1 className="text-xl font-bold text-white">{name}</h1>
-          {contactParts.length > 0 && (
-            <div className="text-xs text-white/80 mt-0.5">{contactParts.join(' · ')}</div>
-          )}
+          <div>
+            <h1 className="text-xl font-bold text-white">{name}</h1>
+            {contactParts.length > 0 && (
+              <div className="text-xs text-white/80 mt-0.5">{contactParts.join(' · ')}</div>
+            )}
+          </div>
+          <Avatar avatar={avatar} name={name} themeColor={themeColor} size={52} />
         </div>
       );
     }
     if (templateId === 'academic') {
-      // academic: 居中衬线 + 双横线
+      // academic: 居中衬线 + 双横线 + 右上角头像
       return (
-        <div className="mb-4">
+        <div className="mb-4 relative">
           <div className="border-t-2 border-gray-800 mb-2" />
+          <div className="absolute top-0 right-0">
+            <Avatar avatar={avatar} name={name} themeColor={themeColor} size={48} />
+          </div>
           <h1 className="text-center text-xl font-bold text-text-primary" style={{ fontFamily: "'Times New Roman', serif" }}>{name}</h1>
           {contactParts.length > 0 && (
             <div className="text-center text-xs text-text-tertiary mt-1">{contactParts.join('  ·  ')}</div>
@@ -927,12 +991,15 @@ export default function ResumePreview({
     }
     // 默认
     return (
-      <>
+      <div className="relative">
+        <div className="absolute top-0 right-0">
+          <Avatar avatar={avatar} name={name} themeColor={themeColor} size={48} />
+        </div>
         <h1 className={`text-center font-bold text-text-primary ${compact ? 'text-xl mb-1' : 'text-2xl mb-2'}`}>{name}</h1>
         {contactParts.length > 0 && (
           <div className="text-center text-xs text-text-tertiary mb-3">{contactParts.join(' | ')}</div>
         )}
-      </>
+      </div>
     );
   };
 
@@ -946,7 +1013,7 @@ export default function ResumePreview({
     academic: 'p-2 mt-1 mb-2',
   };
   const sectionBgColors: Record<string, string> = {
-    modern: 'rgba(37, 99, 235, 0.04)',
+    modern: 'rgba(29, 78, 216, 0.04)',
     classic: 'rgba(28, 72, 124, 0.04)',
     tech: 'rgba(15, 118, 110, 0.04)',
     minimal: 'transparent',

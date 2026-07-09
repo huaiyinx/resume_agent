@@ -3,7 +3,9 @@
 // 在此层持有 treeRefreshKey / knowledgeRefreshKey / activeView 状态：
 // - treeRefreshKey：简历上传成功 → 中栏版本树刷新
 // - knowledgeRefreshKey：知识素材上传 / 文档删除 → KnowledgeStatus + KnowledgeView 刷新
-// - activeView：左栏导航切换中栏视图（版本树 / 知识库）
+// - activeView：从 Workspace 传入（GlobalToolbar + LeftPanel 共享）
+//
+// US-21：activeView 提升到 Workspace 层，treeNodes 传给 LeftPanel 用于 badge
 
 import { useCallback, useState } from 'react';
 import LeftPanel from './LeftPanel';
@@ -12,20 +14,25 @@ import RightPanel from './RightPanel';
 import type { ActiveView } from '@/types/knowledge';
 import type { ResumeNode } from '@/types/tree';
 
-export default function MainLayout() {
+interface MainLayoutProps {
+  /** 当前激活的视图（从 Workspace 传入） */
+  activeView: ActiveView;
+  /** 导航切换回调（从 Workspace 传入） */
+  onNavigate: (view: ActiveView) => void;
+}
+
+export default function MainLayout({ activeView, onNavigate }: MainLayoutProps) {
   // 上传成功后递增，触发 VersionTree 重新拉取
   const [treeRefreshKey, setTreeRefreshKey] = useState(0);
   // 知识库上传 / 删除后递增，触发 KnowledgeStatus + KnowledgeView 刷新
   const [knowledgeRefreshKey, setKnowledgeRefreshKey] = useState(0);
-  // 中栏当前视图
-  const [activeView, setActiveView] = useState<ActiveView>('version-tree');
   // US-8：AI 生成的简历数据（右栏 GenerateView 产出 → 中栏 ResumePreview 展示）
   const [generatedResumeData, setGeneratedResumeData] = useState<
     Record<string, unknown> | null
   >(null);
   // US-8：当前选中的模板 id（默认 modern）
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('modern');
-  // 版本树节点列表（供 Diff 选择器和保存功能使用）
+  // 版本树节点列表（供 Diff 选择器和保存功能使用 + LeftPanel badge）
   const [treeNodes, setTreeNodes] = useState<ResumeNode[]>([]);
   // US-12：当前选中的节点 ID（传给左栏 PersonalInfoForm）
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -40,10 +47,6 @@ export default function MainLayout() {
 
   const handleKnowledgeRefresh = useCallback(() => {
     setKnowledgeRefreshKey((k) => k + 1);
-  }, []);
-
-  const handleNavigate = useCallback((view: ActiveView) => {
-    setActiveView(view);
   }, []);
 
   // AI 生成成功后写入 generatedResumeData，供中栏预览
@@ -73,7 +76,9 @@ export default function MainLayout() {
         onTreeRefresh={handleTreeRefresh}
         onKnowledgeRefresh={handleKnowledgeRefresh}
         knowledgeRefreshKey={knowledgeRefreshKey}
-        onNavigate={handleNavigate}
+        onNavigate={onNavigate}
+        activeView={activeView}
+        treeNodes={treeNodes}
         selectedNodeId={selectedNodeId}
         onSectionOrderUpdated={() => setSectionOrderVersion((v) => v + 1)}
       />
