@@ -47,9 +47,12 @@ export function useNodeTooltip() {
 
   const handleMouseEnter = useCallback(
     (e: React.MouseEvent, data: TooltipData) => {
+      // 在 setTimeout 之前捕获 DOM 引用，因为 React 合成事件的
+      // currentTarget 在事件处理器返回后会被置为 null
+      const target = e.currentTarget as HTMLElement;
       // 500ms 延迟后显示
       timerRef.current = setTimeout(() => {
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const rect = target.getBoundingClientRect();
         const tooltipWidth = 240;
         const tooltipHeight = 160;
 
