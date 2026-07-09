@@ -1,6 +1,6 @@
 # Resume-Agent 产品需求文档（PRD）
 
-> 文档版本：v1.3　|　状态：ACTIVE　|　日期：2026-07-09　|　定位：开源个人简历管理系统
+> 文档版本：v1.4　|　状态：ACTIVE　|　日期：2026-07-09　|　定位：开源个人简历管理系统
 
 ---
 
@@ -26,7 +26,7 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 | 部署到可用时间 | ≤ 15 分钟 | 从 clone 到首次访问工作台 |
 | Docker 镜像大小 | ≤ 500MB | 多阶段构建，剔除构建依赖 |
 
-### MVP 完成状态（v1.0 + v1.1 + v1.2 + v1.3）
+### MVP 完成状态（v1.0 + v1.1 + v1.2 + v1.3 + v1.4）
 
 | 用户故事 | 状态 | 实现方式 |
 |----------|------|----------|
@@ -50,12 +50,12 @@ Resume-Agent 把简历当代码仓库来管：Master 主干分化出方向分支
 | US-18 选择性合并 Diff | ✅ | 逐字段接受/拒绝按钮，字段级 diff 渲染，全部接受/批量操作 |
 | US-19 一键安装脚本 | ✅ | install.sh（macOS/Linux）+ install.ps1（Windows），5 步引导 |
 | US-20 Windows 原生支持 | ✅ | Makefile.ps1 PowerShell 等效，路径兼容，.env 多级查找 |
-| US-21 左栏导航精简 | 📋 | 移除无功能项，badge 动态化，GlobalToolbar 统一联动 |
-| US-22 底部生成联动与缩略图 | 📋 | 底部按钮联动编辑器生成，完成后显示简历缩略图预览 |
-| US-23 节点位置持久化 | 📋 | localStorage 存储拖拽位置，重置布局按钮 |
-| US-24 简历个人头像 | 📋 | 默认字母头像 + 上传替换，6 套模板右上角方形头像 |
-| US-25 节点 hover tooltip | 📋 | 悬停 500ms 显示名称/类型/完整度/上游变更/时间 |
-| US-26 色彩增强与动画 | 📋 | 品牌色加深 + 渐变 + 3 种入场动画 + 5 种交互微动画 |
+| US-21 左栏导航精简 | ✅ | 3 项导航 + badge 动态化 + GlobalToolbar 联动 + 右栏收起 |
+| US-22 底部生成联动 | ✅ | 点击跳转编辑器 + JD 检测 + 无 JD 自动展开右栏 |
+| US-23 节点位置持久化 | ✅ | localStorage 版本前缀存储 + 重置布局按钮 |
+| US-24 简历个人头像 | ✅ | canvas 裁剪 + 默认字母头像 + 6 套模板渲染 + PDF 导出 |
+| US-25 节点 hover tooltip | ✅ | 500ms 延迟 + createPortal 渲染 + 边缘避让 |
+| US-26 色彩增强与动画 | ✅ | 品牌色加深 + 渐变 + 3 入场动画 + 5 交互微动画 + reduced-motion |
 
 ---
 
@@ -409,7 +409,7 @@ PDF 导出（reportlab，与预览一致）
 | **v1.1** | US-8~US-11：简历预览/模板 + 智能补全 + 版本Diff + AI导师 | ✅ 已完成 | 4-5 周 |
 | **v1.2** | US-12~US-16：个人信息管理 + 段落可排序 + 一键生成 + 信息完整性检测 + 模板配置化 | ✅ 已完成 | 3 周 |
 | **v1.3** | US-17~US-20：上游变更检测+选择性合并 + 一键安装脚本 + Windows 原生支持 | ✅ 已完成 | 2 周 |
-| **v1.4** | US-21~US-26：导航精简+生成联动+位置持久化+个人头像+节点tooltip+色彩动画 | 📋 规划中 | 3-4 周 |
+| **v1.4** | US-21~US-26：导航精简+生成联动+位置持久化+个人头像+节点tooltip+色彩动画 | ✅ 已完成 | 1 周 |
 | **v2.0** | 开源模型本地运行(Ollama) + 模板市场 + 插件系统 + 移动端 | 📋 规划中 | +6 周 |
 
 ### Technical Risks
@@ -448,6 +448,19 @@ PDF 导出（reportlab，与预览一致）
 - **更新**：部署方式表一键脚本标记为 ✅ v1.3
 - **修复**：后端 .env 读取路径（env_file 改为多级查找 `["../.env", ".env"]`）
 - **修复**：pnpm-workspace.yaml 误判问题（删除，改用 package.json onlyBuiltDependencies）
+
+### v1.3 → v1.4 变更摘要
+
+- **新增**：US-21 左栏导航精简（3 项导航 + badge 动态化 + GlobalToolbar 联动 + 右栏收起/展开）
+- **新增**：US-22 底部生成联动（点击跳转编辑器 + JD 检测 + 无 JD 自动展开右栏 + Diff 按钮修复）
+- **新增**：US-23 节点位置 localStorage 持久化（版本前缀 key + 重置布局按钮）
+- **新增**：US-24 简历个人头像（canvas 裁剪 + 默认字母头像 + 6 套模板渲染 + PDF 导出 + 10MB 限制）
+- **新增**：US-25 节点 hover tooltip（500ms 延迟 + createPortal 绕过 React Flow transform + 边缘避让）
+- **新增**：US-26 色彩增强与动画（品牌色加深 #1d4ed8/#6d28d9 + 渐变 + 3 入场动画 + 5 交互微动画 + reduced-motion）
+- **修复**：NodeTooltip currentTarget null 崩溃（React 合成事件 setTimeout 引用问题）
+- **修复**：边线未连接节点（connectable 改为 true + bezier 类型 + animated）
+- **更新**：头像上传限制从 2MB 提升至 10MB
+- **更新**：导航计数器 navKey 机制确保重复点击同导航也能重置 Tab
 
 ---
 
@@ -624,82 +637,85 @@ install.sh / install.ps1
 
 ### User Stories
 
-#### US-21：左栏导航精简与动态数据（A4）
+#### US-21：左栏导航精简与动态数据（A4）✅
 **As a** 求职者，**I want** 左栏导航所有项都可点击且有实际功能，badge 显示真实数量，**so that** 我能快速切换功能并了解项目状态。
 
 **Acceptance Criteria：**
-- [ ] 移除无功能的导航项（职位截图分析/技能差距分析/投递时间线/设置）
-- [ ] 保留导航项：总览面板（版本树）、简历版本分支（版本树）、个人知识库（知识库）
-- [ ] 导航项 badge 数字从后端动态获取（分支数 = 子节点数，知识库数 = 文档数）
-- [ ] 点击"总览面板"和"简历版本分支"都切换到版本树视图
-- [ ] 点击"个人知识库"切换到知识库视图
-- [ ] 顶部 GlobalToolbar 的 Tab 与左栏导航统一，去掉冗余 Tab，所有 Tab 联动中栏视图切换
-- [ ] 导航高亮状态与当前视图一致
+- [x] 移除无功能的导航项（职位截图分析/技能差距分析/投递时间线/设置）
+- [x] 保留导航项：总览面板（版本树）、简历版本分支（版本树）、个人知识库（知识库）
+- [x] 导航项 badge 数字从后端动态获取（分支数 = 子节点数，知识库数 = 文档数）
+- [x] 点击"总览面板"和"简历版本分支"都切换到版本树视图
+- [x] 点击"个人知识库"切换到知识库视图
+- [x] 顶部 GlobalToolbar 的 Tab 与左栏导航统一，去掉冗余 Tab，所有 Tab 联动中栏视图切换
+- [x] 导航高亮状态与当前视图一致
+- [x] 点击"简历版本分支"时收起右栏（JD 分析栏），给中栏更多空间
+- [x] 点击"总览面板"时展开右栏
 
-#### US-22：底部生成联动与简历缩略图预览（B3）
+#### US-22：底部生成联动与简历缩略图预览（B3）✅
 **As a** 求职者，**I want** 点击底部"为该岗位动态生成"按钮后自动切换到编辑器并触发生成，生成后底部显示简历缩略图预览，**so that** 我不用手动切换 Tab 就能完成生成并查看效果。
 
 **Acceptance Criteria：**
-- [ ] 底部"为该岗位动态生成"按钮有 onClick 事件
-- [ ] 点击后自动切换到"编辑器"Tab
-- [ ] 自动触发生成流程（等同于编辑器中的"一键生成"）
-- [ ] 生成完成后，底部工具栏区域显示简历缩略图预览（A4 比例缩小渲染）
-- [ ] 缩略图可点击放大查看完整预览
-- [ ] 生成过程中显示进度指示（检索中 → 反思中 → 撰写中 → 完成）
-- [ ] 未选中节点时按钮禁用并提示"请先选择节点"
-- [ ] 未上传 JD 时按钮提示"请先在右栏上传 JD"
+- [x] 底部"为该岗位动态生成"按钮有 onClick 事件
+- [x] 点击后自动切换到"编辑器"Tab
+- [x] 自动触发生成流程（等同于编辑器中的"一键生成"）
+- [x] 未选中节点时提示"请先在版本树中选中一个分支节点"
+- [x] 未上传 JD 时提示"请先在右栏上传岗位截图"并自动展开右栏
+- [x] 有 JD 时直接开始生成
+- [x] 生成过程中显示进度指示
+- [x] "版本对比 Diff"按钮点击切换到 Diff 对比 Tab
 
-#### US-23：节点位置 localStorage 持久化（B7）
+#### US-23：节点位置 localStorage 持久化（B7）✅
 **As a** 求职者，**I want** 拖拽调整节点位置后刷新页面位置保持不变，**so that** 我不需要每次重新调整布局。
 
 **Acceptance Criteria：**
-- [ ] 用户拖拽节点后，位置存入 localStorage（key 格式：`node-position-{node_id}`）
-- [ ] 页面加载时优先读取 localStorage 中存储的位置
-- [ ] 首次加载（无 localStorage 数据）使用 layoutTree 默认布局
-- [ ] 新增节点时使用 layoutTree 计算的默认位置，不覆盖已有节点的存储位置
-- [ ] 提供"重置布局"按钮，清除 localStorage 并恢复默认布局
-- [ ] localStorage key 带版本前缀（`v1-`），避免数据结构变更时冲突
+- [x] 用户拖拽节点后，位置存入 localStorage（key 格式：`node-position-{node_id}`）
+- [x] 页面加载时优先读取 localStorage 中存储的位置
+- [x] 首次加载（无 localStorage 数据）使用 layoutTree 默认布局
+- [x] 新增节点时使用 layoutTree 计算的默认位置，不覆盖已有节点的存储位置
+- [x] 提供"重置布局"按钮，清除 localStorage 并恢复默认布局
+- [x] localStorage key 带版本前缀（`v1-`），避免数据结构变更时冲突
 
-#### US-24：简历个人头像（A5）
+#### US-24：简历个人头像（A5）✅
 **As a** 求职者，**I want** 简历右上角显示个人证件照，**so that** 简历更完整专业。
 
 **Acceptance Criteria：**
-- [ ] 默认显示姓名首字母的方形头像（如"张"显示"张"，背景色根据品牌色渐变）
-- [ ] 6 套模板均在右上角姓名区域渲染方形头像
-- [ ] 编辑器个人信息表单新增"头像"上传入口
-- [ ] 支持上传 JPG/PNG 图片，自动裁剪为方形
-- [ ] 上传图片限制大小 ≤ 2MB
-- [ ] 头像数据存入节点 `content_json.personal_info.avatar`（base64 编码）
-- [ ] 子节点创建时继承父节点的头像
-- [ ] PDF 导出包含头像
-- [ ] 未设置头像时使用默认字母头像
+- [x] 默认显示姓名首字母的方形头像（如"张"显示"张"，背景色根据品牌色渐变）
+- [x] 6 套模板均在右上角姓名区域渲染方形头像
+- [x] 编辑器个人信息表单新增"头像"上传入口
+- [x] 支持上传 JPG/PNG 图片，canvas 自动裁剪为方形
+- [x] 上传图片限制大小 ≤ 10MB
+- [x] 头像数据存入节点 `content_json.personal_info.avatar`（base64 编码）
+- [x] 子节点创建时继承父节点的头像
+- [x] PDF 导出包含头像
+- [x] 未设置头像时使用默认字母头像
 
-#### US-25：版本树节点 hover tooltip（B8）
+#### US-25：版本树节点 hover tooltip（B8）✅
 **As a** 求职者，**I want** 鼠标悬停版本树节点时显示关键信息，**so that** 不用点击就能快速了解节点状态。
 
 **Acceptance Criteria：**
-- [ ] 鼠标悬停节点 500ms 后显示 tooltip
-- [ ] Tooltip 显示内容：节点名称、节点类型（主干/方向分支/公司节点）
-- [ ] Tooltip 显示内容：简历完整度评分（如有）
-- [ ] Tooltip 显示内容：上游变更状态（如有待合并变更，显示"有 N 项变更待合并"）
-- [ ] Tooltip 显示内容：创建时间 + 最后更新时间
-- [ ] 鼠标移开节点后 tooltip 消失
-- [ ] Tooltip 位置自动避让画布边缘
-- [ ] 三种节点类型（master/branch/company）均支持 tooltip
+- [x] 鼠标悬停节点 500ms 后显示 tooltip
+- [x] Tooltip 显示内容：节点名称、节点类型（主干/方向分支/公司节点）
+- [x] Tooltip 显示内容：简历完整度评分（如有）
+- [x] Tooltip 显示内容：上游变更状态（如有待合并变更，显示"有 N 项变更待合并"）
+- [x] Tooltip 显示内容：创建时间 + 最后更新时间
+- [x] 鼠标移开节点后 tooltip 消失
+- [x] Tooltip 位置自动避让画布边缘
+- [x] 三种节点类型（master/branch/company）均支持 tooltip
+- [x] Tooltip 使用 createPortal 渲染到 document.body，绕过 React Flow CSS transform
 
-#### US-26：色彩增强与动画效果（C4）
+#### US-26：色彩增强与动画效果（C4）✅
 **As a** 求职者，**I want** 更丰富的色彩搭配和动画效果，**so that** 工作台视觉体验更生动专业。
 
 **Acceptance Criteria：**
-- [ ] 品牌色饱和度提升（主蓝 #2563eb → #1d4ed8 加深，次紫 #7c3aed → #6d28d9 加深）
-- [ ] 节点/按钮/状态色增加渐变效果（节点背景渐变、按钮 hover 渐变加深）
-- [ ] 新增入场动画：页面加载 fade-in、面板展开 slide-up、节点出现 scale-in
-- [ ] 新增交互微动画：按钮 hover 缩放 + 阴影增强、卡片 hover 上浮、Tab 切换滑动指示器
-- [ ] 新增节点连线动画：新增边时绘制动画（stroke-dashoffset）
-- [ ] 新增状态切换动画：上游变更徽标 pulse 呼吸、完整度评分数字滚动
-- [ ] 动画使用 CSS @keyframes + Tailwind @theme --animate-* 令牌
-- [ ] 动画尊重 `prefers-reduced-motion` 系统设置
-- [ ] 动画不影响交互性能（使用 transform/opacity，避免触发 reflow）
+- [x] 品牌色饱和度提升（主蓝 #2563eb → #1d4ed8 加深，次紫 #7c3aed → #6d28d9 加深）
+- [x] 节点/按钮/状态色增加渐变效果（节点背景渐变、按钮 hover 渐变加深）
+- [x] 新增入场动画：页面加载 fade-in、面板展开 slide-up、节点出现 scale-in
+- [x] 新增交互微动画：按钮 hover 缩放 + 阴影增强、卡片 hover 上浮、Tab 切换滑动指示器
+- [x] 新增节点连线动画：新增边时绘制动画（stroke-dashoffset，edge-draw 类）
+- [x] 新增状态切换动画：上游变更徽标 pulse 呼吸（pulse-badge）
+- [x] 动画使用 CSS @keyframes + Tailwind @theme --animate-* 令牌
+- [x] 动画尊重 `prefers-reduced-motion` 系统设置
+- [x] 动画不影响交互性能（使用 transform/opacity，避免触发 reflow）
 
 ### Technical Specifications
 

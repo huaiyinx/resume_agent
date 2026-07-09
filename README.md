@@ -176,6 +176,17 @@ FILES_ROOT=~/.resume-agent/files
 | 一键安装脚本 | macOS/Linux `install.sh` + Windows `install.ps1`，环境检测 + 依赖安装 + LLM/MinerU 配置引导 |
 | Windows 原生支持 | `Makefile.ps1` 等效 Makefile（dev/build/test/lint/clean），PowerShell 跨平台脚本 |
 
+### v1.4 UI 精简与视觉增强
+
+| 功能 | 说明 |
+|------|------|
+| 导航精简与联动 | 3 项导航 + 动态 badge + GlobalToolbar 统一联动 + "简历版本分支"收起右栏扩大中栏空间 |
+| 底部生成联动 | 点击"为该岗位动态生成"自动跳转编辑器，检测 JD 状态，无 JD 自动展开右栏 |
+| 节点位置持久化 | 拖拽位置存入 localStorage（版本前缀 key），刷新后保持，一键重置布局 |
+| 简历个人头像 | 默认字母头像 + 上传替换（canvas 裁剪），6 套模板渲染 + PDF 导出，≤10MB |
+| 节点 hover tooltip | 悬停 500ms 显示名称/类型/完整度/上游变更/时间，createPortal 绕过 React Flow transform |
+| 色彩增强与动画 | 品牌色加深（#1d4ed8/#6d28d9）+ 渐变 + 3 入场动画 + 5 交互微动画 + prefers-reduced-motion |
+
 ## 项目结构
 
 ```
