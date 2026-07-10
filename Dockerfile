@@ -1,9 +1,9 @@
 # === Stage 1: 前端构建 ===
 FROM node:22-alpine AS frontend-build
 WORKDIR /app/frontend
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
-RUN pnpm config set allow-build esbuild && pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
 RUN pnpm build
 
