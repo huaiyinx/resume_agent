@@ -10,6 +10,8 @@
 - 浏览器未来通过 `https://chat.19991023.xyz/life/career/` 访问，由现有认证和反向代理注入内部令牌。
 - 数据持久化到 `/mnt/data/life-os/resume-agent`；导入源只读挂载为 `/imports`。
 
+香港 VPS 构建时使用固定本地镜像名 `lifeos-resume-agent:local`。若需要美国出站加速，先用 `docker build --network host` 构建，再运行 `docker compose up -d --no-build`。
+
 ## Career-Ops 冷启动
 
 ```bash

@@ -1,6 +1,7 @@
 services:
   resume-agent:
     container_name: lifeos-resume-agent
+    image: lifeos-resume-agent:local
     build:
       context: .
       args:
