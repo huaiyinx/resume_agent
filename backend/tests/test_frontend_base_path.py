@@ -20,6 +20,26 @@ def test_frontend_viewport_supports_mobile_safe_area() -> None:
     assert "viewport-fit=cover" in html
 
 
+def test_frontend_has_visible_boot_and_stale_tab_recovery() -> None:
+    project_root = Path(__file__).resolve().parents[2]
+    html = (project_root / "frontend" / "index.html").read_text(encoding="utf-8")
+    entry = (project_root / "frontend" / "src" / "main.tsx").read_text(
+        encoding="utf-8"
+    )
+    workspace = (
+        project_root / "frontend" / "src" / "routes" / "Workspace.tsx"
+    ).read_text(encoding="utf-8")
+
+    assert 'id="career-boot"' in html
+    assert 'id="career-boot-reload" type="button" style="display:block"' in html
+    assert "event.persisted" in html
+    assert "window.location.reload()" in html
+    assert "}, true);" in html
+    assert "MutationObserver" in html
+    assert "__careerAppReady" in entry
+    assert "page-enter career-workspace-shell" not in workspace
+
+
 def test_mobile_layout_uses_single_pane_instead_of_fixed_three_columns() -> None:
     project_root = Path(__file__).resolve().parents[2]
     layout = (

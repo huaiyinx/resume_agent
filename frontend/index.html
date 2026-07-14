@@ -4,9 +4,95 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Resume-Agent 智能简历工作台</title>
+    <style>
+      #career-boot {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        color: #0f172a;
+        background: #fafbfc;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      #career-boot[hidden] { display: none; }
+      #career-boot-card { max-width: 320px; text-align: center; }
+      #career-boot-title { margin-bottom: 8px; font-weight: 700; }
+      #career-boot-detail { color: #64748b; font-size: 14px; line-height: 1.6; }
+      #career-boot-reload {
+        min-height: 44px;
+        margin: 16px auto 0;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 10px;
+        color: #fff;
+        background: #1d4ed8;
+        font: inherit;
+      }
+    </style>
   </head>
   <body>
+    <div id="career-boot" role="status" aria-live="polite">
+      <div id="career-boot-card">
+        <div id="career-boot-title">正在打开职业工作台…</div>
+        <div id="career-boot-detail">如果页面从旧标签恢复，系统会自动重新加载。</div>
+        <button id="career-boot-reload" type="button" style="display:block">强制刷新</button>
+      </div>
+    </div>
     <div id="root"></div>
+    <script>
+      (function () {
+        var boot = document.getElementById('career-boot');
+        var title = document.getElementById('career-boot-title');
+        var detail = document.getElementById('career-boot-detail');
+        var reload = document.getElementById('career-boot-reload');
+        var rendered = false;
+
+        window.__careerAppReady = function () {
+          rendered = true;
+          if (boot) boot.hidden = true;
+        };
+
+        var root = document.getElementById('root');
+        if (root && window.MutationObserver) {
+          new MutationObserver(function () {
+            if (root.children.length > 0) window.__careerAppReady();
+          }).observe(root, { childList: true });
+        }
+
+        function showRecovery(message) {
+          if (!boot) return;
+          boot.hidden = false;
+          if (title) title.textContent = '职业工作台没有正常显示';
+          if (detail) detail.textContent = message || '可能是旧标签页缓存，请强制刷新。';
+          if (reload) reload.style.display = 'block';
+        }
+
+        window.addEventListener('error', function () {
+          if (!rendered) showRecovery('前端资源启动失败，请强制刷新后重试。');
+        }, true);
+        window.addEventListener('unhandledrejection', function () {
+          if (!rendered) showRecovery('页面启动遇到异常，请强制刷新后重试。');
+        });
+        window.addEventListener('pageshow', function (event) {
+          if (event.persisted && !rendered) {
+            window.location.reload();
+          }
+        });
+        if (reload) {
+          reload.addEventListener('click', function () {
+            var url = new URL(window.location.href);
+            url.searchParams.set('_refresh', String(Date.now()));
+            window.location.replace(url.toString());
+          });
+        }
+        window.setTimeout(function () {
+          if (!rendered) showRecovery('加载时间过长，可能命中了旧缓存。');
+        }, 8000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

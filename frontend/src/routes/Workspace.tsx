@@ -5,7 +5,7 @@
 // v1.4: rightPanelCollapsed — 点击"简历版本分支"时收起右栏
 //       navKey — 每次导航点击递增，强制 CenterPanel 重置 activeTab 到"版本树"
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import GlobalToolbar from '@/components/layout/GlobalToolbar';
 import MainLayout from '@/components/layout/MainLayout';
 import type { ActiveView } from '@/types/knowledge';
@@ -17,6 +17,10 @@ export default function Workspace() {
   const [mobilePane, setMobilePane] = useState<MobilePane>('workspace');
   // 导航计数器：每次点击导航项都递增，即使 activeView 没变也能强制重置
   const [navKey, setNavKey] = useState(0);
+
+  useEffect(() => {
+    window.__careerAppReady?.();
+  }, []);
 
   const handleNavigate = useCallback((view: ActiveView) => {
     setActiveView(view);
@@ -45,7 +49,7 @@ export default function Workspace() {
   }, []);
 
   return (
-    <div className="h-screen overflow-hidden bg-bg-primary page-enter career-workspace-shell">
+    <div className="h-screen overflow-hidden bg-bg-primary career-workspace-shell">
       <GlobalToolbar
         activeView={activeView}
         onNavigate={handleNavigate}
