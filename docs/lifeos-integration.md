@@ -4,10 +4,11 @@
 
 ## 部署边界
 
-- 生产容器加入 Nginx Proxy Manager 的外部网络 `ai-network`，不映射宿主机端口。NPM 通过容器名访问 `lifeos-resume-agent:5173`；Resume-Agent 通过网关 `172.19.0.1:4000` 访问宿主机 LiteLLM。
+- 生产容器加入 Nginx Proxy Manager 的外部网络 `ai-network`。NPM 继续通过容器名访问 `lifeos-resume-agent:5173`；同时只映射 `127.0.0.1:5174:5173`，供宿主机上的 LifeOS 调用，端口不会绑定到公网网卡。Resume-Agent 通过网关 `172.19.0.1:4000` 访问宿主机 LiteLLM。
 - 业务 API 在配置 `INTERNAL_API_TOKEN` 后要求 `X-Resume-Agent-Token`。
 - `/api/health` 保持无凭据本机探活。
 - 浏览器通过 `https://chat.19991023.xyz/life/career/` 访问，由现有认证和 Nginx Proxy Manager 注入内部令牌。
+- LifeOS 通过 `http://127.0.0.1:5174/api/gap-report` 调用 Gap 能力，并在服务端携带内部令牌；Love 和浏览器均不直接持有该令牌。
 - 数据持久化到 `/mnt/data/life-os/resume-agent`；导入源只读挂载为 `/imports`。
 
 香港 VPS 构建时使用固定本地镜像名 `lifeos-resume-agent:local`。必须同时传入前端子路径；否则静态资源即使返回 `200`，React Router 仍会因 `/life/career/` 未匹配而渲染空白页：
@@ -32,6 +33,7 @@ docker exec lifeos-resume-agent /app/.venv/bin/python /app/scripts/import_career
 
 - 项目：`/opt/life-os-resume-agent`，分支 `agent/lifeos-integration-20260714`。
 - 容器：`lifeos-resume-agent`，镜像 `lifeos-resume-agent:local`，网络 `ai-network`。
+- 宿主机回环映射：`127.0.0.1:5174 -> lifeos-resume-agent:5173`，仅供同机 LifeOS 使用。
 - 环境文件：`/etc/lifeos/resume-agent.env`，权限 `600`，禁止提交。
 - 数据目录：`/mnt/data/life-os/resume-agent`。
 - 只读导入源：`/mnt/data/life-os/resume-agent-import/Career-Ops`。
@@ -50,6 +52,6 @@ docker compose -f docker-compose.production.yml down
 
 ## 后续链路
 
-1. Love 职场截图通过 loopback 发送到 Resume-Agent。
-2. Resume-Agent 返回结构化 JD、Gap 和导师建议。
-3. LifeOS 职业页显示摘要，并提供全屏工作台入口。
+1. Love 在职场对话中识别 JD / HR 截图，完成视觉提取后把结构化 JD 和分析结果发送给 LifeOS 内部接口。
+2. LifeOS 通过宿主机 loopback 调用 Resume-Agent 的 Gap 接口，并保存最新岗位分析和稳定去重事件。
+3. LifeOS 将 Gap 摘要返回给 Love 展示，同时在职业页持久显示结果并提供全屏简历工作台入口。

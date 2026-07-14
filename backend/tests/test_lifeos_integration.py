@@ -5,6 +5,20 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 
+def test_gap_report_openapi_uses_structured_jd_schema() -> None:
+    from resume_agent.main import app
+
+    schema = TestClient(app).get("/openapi.json").json()
+    operation = schema["paths"]["/api/gap-report"]["post"]
+    request_schema = operation["requestBody"]["content"]["application/json"]["schema"]
+
+    assert request_schema["$ref"] == "#/components/schemas/GapReportRequest"
+    properties = schema["components"]["schemas"]["GapReportRequest"]["properties"]
+    assert "structured_jd" in properties
+    assert "resume_node_id" not in properties
+    assert "jd_analysis_id" not in properties
+
+
 def test_internal_token_protects_business_api(monkeypatch) -> None:
     from resume_agent import config as config_module
     from resume_agent import main as main_module

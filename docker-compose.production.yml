@@ -8,6 +8,8 @@ services:
         VITE_BASE_PATH: /life/career/
     networks:
       - ai-network
+    ports:
+      - "127.0.0.1:5174:5173"
     volumes:
       - /mnt/data/life-os/resume-agent:/root/.resume-agent
       - /mnt/data/life-os/resume-agent-import:/imports:ro

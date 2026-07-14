@@ -11,7 +11,6 @@ from resume_agent.api import (
     completeness,
     diff,
     export,
-    gap,
     generate,
     health,
     jd,
@@ -36,7 +35,6 @@ api_router.include_router(tree.router)
 api_router.include_router(resumes.router)
 api_router.include_router(knowledge.router)
 api_router.include_router(jd.router)
-api_router.include_router(gap.router)
 api_router.include_router(generate.router)
 api_router.include_router(suggest.router)
 api_router.include_router(export.router)
