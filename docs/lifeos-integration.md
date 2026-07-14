@@ -4,7 +4,7 @@
 
 ## 部署边界
 
-- 生产容器使用 host 网络，但应用只监听 `127.0.0.1:5174`，不直接暴露公网，并可直接访问宿主机 LiteLLM `127.0.0.1:4000`。
+- 生产容器加入 Nginx Proxy Manager 的外部网络 `ai-network`，不映射宿主机端口。NPM 通过容器名访问 `lifeos-resume-agent:5173`；Resume-Agent 通过网关 `172.19.0.1:4000` 访问宿主机 LiteLLM。
 - 业务 API 在配置 `INTERNAL_API_TOKEN` 后要求 `X-Resume-Agent-Token`。
 - `/api/health` 保持无凭据本机探活。
 - 浏览器未来通过 `https://chat.19991023.xyz/life/career/` 访问，由现有认证和反向代理注入内部令牌。
