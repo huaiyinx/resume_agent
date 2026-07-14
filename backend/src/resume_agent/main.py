@@ -144,7 +144,14 @@ def create_app() -> FastAPI:
                 ``static/index.html`` 文件响应。
             """
             index_html = static_dir / "index.html"
-            return FileResponse(index_html)
+            return FileResponse(
+                index_html,
+                headers={
+                    "Cache-Control": "no-cache, no-store, must-revalidate",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                },
+            )
 
     return app
 

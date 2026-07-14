@@ -55,14 +55,14 @@ export default function RightPanel({
 
   return (
     <aside
-      className="flex flex-col overflow-y-auto bg-bg-secondary border-l border-border-default relative"
+      className="career-right-panel flex flex-col overflow-y-auto bg-bg-secondary border-l border-border-default relative"
       style={{ width: 'var(--right-panel-width)', minWidth: 'var(--right-panel-width)' }}
     >
       {/* 收起按钮 — 固定在右上角 */}
       {onCollapse && (
         <button
           onClick={onCollapse}
-          className="absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-md text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer"
+          className="career-right-panel-collapse absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-md text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors cursor-pointer"
           title="收起右栏"
         >
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">

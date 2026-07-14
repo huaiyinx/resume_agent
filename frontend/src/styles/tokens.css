@@ -257,6 +257,195 @@
   animation: var(--animate-edge-draw);
 }
 
+/* === 手机端职业工作台 ===
+ * 桌面保持三栏；窄屏只显示一个全宽面板，通过顶部四个按钮切换。
+ * 三个面板仍保持挂载，JD / Gap 等本地状态不会因切换丢失。
+ */
+.career-main-layout {
+  height: calc(100vh - var(--header-height));
+  height: calc(100dvh - var(--header-height));
+}
+
+/* 桌面默认不显示手机专用导航。 */
+.career-mobile-pane-nav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --header-height: 104px;
+  }
+
+  .career-workspace-shell {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .career-global-toolbar {
+    height: var(--header-height);
+    min-height: var(--header-height);
+    padding: 8px 12px 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 34px 44px;
+    gap: 6px 8px;
+  }
+
+  .career-toolbar-brand {
+    min-width: 0;
+    font-size: 0.8125rem;
+  }
+
+  .career-toolbar-version {
+    display: none;
+  }
+
+  .career-toolbar-status {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    gap: 6px;
+  }
+
+  .career-toolbar-status > :nth-child(2),
+  .career-toolbar-status > :nth-child(3) {
+    display: none;
+  }
+
+  .career-toolbar-nav-desktop {
+    display: none;
+  }
+
+  .career-mobile-pane-nav {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    padding: 3px;
+    gap: 3px;
+    border: 1px solid var(--color-border-default);
+    border-radius: 10px;
+    background: var(--color-bg-tertiary);
+  }
+
+  .career-mobile-pane-nav > button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    padding: 6px;
+    border: 0;
+    border-radius: 7px;
+    color: var(--color-text-secondary);
+    background: transparent;
+    font-size: 0.75rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .career-mobile-pane-nav > button.is-active {
+    color: var(--color-brand-primary);
+    background: var(--color-bg-elevated);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .career-main-layout {
+    position: relative;
+    display: block;
+    overflow-y: hidden;
+    overflow-x: hidden;
+  }
+
+  .career-center-panel,
+  .career-left-panel,
+  .career-right-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: none !important;
+  }
+
+  .career-main-layout[data-mobile-pane='workspace'] > .career-center-panel,
+  .career-main-layout[data-mobile-pane='materials'] > .career-left-panel,
+  .career-main-layout[data-mobile-pane='career'] > .career-right-panel {
+    display: flex !important;
+  }
+
+  .career-left-panel {
+    border-right: 0;
+    overflow-y: auto !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .career-right-panel {
+    border-left: 0;
+    overflow-y: auto !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .career-right-panel-collapse {
+    display: none;
+  }
+
+  .career-right-panel-toggle {
+    display: none !important;
+  }
+
+  .career-center-toolbar {
+    padding: 10px 12px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .career-center-tabs {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .career-center-tabs > button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 7px 4px;
+  }
+
+  .career-canvas-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .career-canvas-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .career-canvas-toolbar > button {
+    flex: 0 0 auto;
+    padding-left: 12px;
+    padding-right: 12px;
+    white-space: nowrap;
+  }
+
+  .career-node-detail {
+    inset: 8px !important;
+    width: auto !important;
+    max-height: calc(100% - 16px) !important;
+  }
+
+  .career-center-panel > :not(.career-center-toolbar),
+  .career-center-panel > .career-center-toolbar + * {
+    min-width: 0;
+  }
+}
+
 /* === US-26: 尊重 prefers-reduced-motion === */
 @media (prefers-reduced-motion: reduce) {
   *,

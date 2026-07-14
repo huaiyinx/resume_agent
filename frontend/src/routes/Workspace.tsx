@@ -9,15 +9,18 @@ import { useCallback, useState } from 'react';
 import GlobalToolbar from '@/components/layout/GlobalToolbar';
 import MainLayout from '@/components/layout/MainLayout';
 import type { ActiveView } from '@/types/knowledge';
+import type { MobileAction, MobilePane } from '@/types/layout';
 
 export default function Workspace() {
   const [activeView, setActiveView] = useState<ActiveView>('version-tree');
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+  const [mobilePane, setMobilePane] = useState<MobilePane>('workspace');
   // 导航计数器：每次点击导航项都递增，即使 activeView 没变也能强制重置
   const [navKey, setNavKey] = useState(0);
 
   const handleNavigate = useCallback((view: ActiveView) => {
     setActiveView(view);
+    setMobilePane('workspace');
     setNavKey((k) => k + 1);
     // 切换到知识库时展开右栏（需要 JD 分析）
     if (view === 'knowledge') {
@@ -25,13 +28,31 @@ export default function Workspace() {
     }
   }, []);
 
+  const handleMobileAction = useCallback((action: MobileAction) => {
+    if (action === 'materials') {
+      setMobilePane('materials');
+      return;
+    }
+    if (action === 'career') {
+      setRightPanelCollapsed(false);
+      setMobilePane('career');
+      return;
+    }
+
+    setActiveView(action === 'knowledge' ? 'knowledge' : 'version-tree');
+    setMobilePane('workspace');
+    setNavKey((key) => key + 1);
+  }, []);
+
   return (
-    <div className="h-screen overflow-hidden bg-bg-primary page-enter">
+    <div className="h-screen overflow-hidden bg-bg-primary page-enter career-workspace-shell">
       <GlobalToolbar
         activeView={activeView}
         onNavigate={handleNavigate}
         onToggleRightPanel={setRightPanelCollapsed}
         rightPanelCollapsed={rightPanelCollapsed}
+        mobilePane={mobilePane}
+        onMobileAction={handleMobileAction}
       />
       <MainLayout
         activeView={activeView}
@@ -39,6 +60,7 @@ export default function Workspace() {
         rightPanelCollapsed={rightPanelCollapsed}
         onToggleRightPanel={setRightPanelCollapsed}
         navKey={navKey}
+        mobilePane={mobilePane}
       />
     </div>
   );

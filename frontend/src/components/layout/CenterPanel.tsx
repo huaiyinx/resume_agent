@@ -362,7 +362,7 @@ export default function CenterPanel({
   // 知识库视图：渲染 KnowledgeView，不显示版本树 Tab / 面包屑
   if (activeView === 'knowledge') {
     return (
-      <main className="flex-1 flex flex-col overflow-hidden bg-bg-primary">
+      <main className="career-center-panel flex-1 flex flex-col overflow-hidden bg-bg-primary">
         <KnowledgeView
           refreshKey={knowledgeRefreshKey}
           onKnowledgeRefresh={onKnowledgeRefresh}
@@ -392,11 +392,11 @@ export default function CenterPanel({
   const breadcrumbPath = computePath(tree, selectedNode);
 
   return (
-    <main className="flex-1 flex flex-col overflow-hidden bg-bg-primary">
+    <main className="career-center-panel flex-1 flex flex-col overflow-hidden bg-bg-primary">
       {/* Breadcrumb + Tab pills */}
-      <div className="flex items-center px-5 py-3 gap-2 border-b border-border-subtle text-sm">
+      <div className="career-center-toolbar flex items-center px-5 py-3 gap-2 border-b border-border-subtle text-sm">
         <Breadcrumb path={breadcrumbPath} />
-        <div className="ml-auto flex gap-0.5 bg-bg-tertiary rounded-md p-0.5">
+        <div className="career-center-tabs ml-auto flex gap-0.5 bg-bg-tertiary rounded-md p-0.5">
           {TAB_PILLS.map((pill) => (
             <button
               key={pill}
@@ -600,7 +600,7 @@ export default function CenterPanel({
           </div>
 
           {/* Canvas toolbar */}
-          <div className="flex items-center gap-3 px-5 py-3 border-t border-border-subtle border-b border-border-subtle">
+          <div className="career-canvas-toolbar flex items-center gap-3 px-5 py-3 border-t border-border-subtle border-b border-border-subtle">
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-transparent text-text-secondary text-sm font-medium border border-border-default rounded-md cursor-pointer transition-all font-body hover:border-border-strong hover:text-text-primary hover:bg-bg-hover"

@@ -13,6 +13,7 @@ import LeftPanel from './LeftPanel';
 import CenterPanel from './CenterPanel';
 import RightPanel from './RightPanel';
 import type { ActiveView } from '@/types/knowledge';
+import type { MobilePane } from '@/types/layout';
 import type { ResumeNode } from '@/types/tree';
 
 interface MainLayoutProps {
@@ -26,6 +27,7 @@ interface MainLayoutProps {
   onToggleRightPanel: (collapsed: boolean) => void;
   /** 导航计数器：每次点击导航递增，用于强制重置中栏 activeTab */
   navKey: number;
+  mobilePane: MobilePane;
 }
 
 export default function MainLayout({
@@ -34,6 +36,7 @@ export default function MainLayout({
   rightPanelCollapsed,
   onToggleRightPanel,
   navKey,
+  mobilePane,
 }: MainLayoutProps) {
   // 上传成功后递增，触发 VersionTree 重新拉取
   const [treeRefreshKey, setTreeRefreshKey] = useState(0);
@@ -82,8 +85,8 @@ export default function MainLayout({
 
   return (
     <div
-      className="flex overflow-hidden"
-      style={{ height: 'calc(100vh - var(--header-height))' }}
+      className="career-main-layout flex overflow-hidden"
+      data-mobile-pane={mobilePane}
     >
       <LeftPanel
         onTreeRefresh={handleTreeRefresh}
@@ -117,7 +120,7 @@ export default function MainLayout({
       {rightPanelCollapsed ? (
         <button
           onClick={() => onToggleRightPanel(false)}
-          className="flex flex-col items-center justify-center bg-bg-secondary border-l border-border-default cursor-pointer hover:bg-bg-hover transition-colors group"
+          className="career-right-panel-toggle flex flex-col items-center justify-center bg-bg-secondary border-l border-border-default cursor-pointer hover:bg-bg-hover transition-colors group"
           style={{ width: 32 }}
           title="展开右栏（职位截图分析）"
         >

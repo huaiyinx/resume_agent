@@ -39,7 +39,7 @@ export default function NodeDetailPanel({ node, onClose }: NodeDetailPanelProps)
   const content = node.content_json;
 
   return (
-    <div className="absolute right-4 top-4 z-20 w-[420px] max-h-[calc(100%-2rem)] overflow-y-auto bg-bg-secondary rounded-lg shadow-lg border border-border-subtle p-4">
+    <div className="career-node-detail absolute right-4 top-4 z-20 w-[420px] max-h-[calc(100%-2rem)] overflow-y-auto bg-bg-secondary rounded-lg shadow-lg border border-border-subtle p-4">
       {/* 顶部：类型标签 + 关闭按钮 */}
       <div className="flex items-start justify-between mb-3">
         <span

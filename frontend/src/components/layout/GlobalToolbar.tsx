@@ -5,6 +5,7 @@
 // v1.4: "简历版本分支" Tab 点击时收起右栏，给中栏更多空间
 
 import type { ActiveView } from '@/types/knowledge';
+import type { MobileAction, MobilePane } from '@/types/layout';
 
 const NAV_TABS: { label: string; view: ActiveView; collapseRight?: boolean }[] = [
   { label: '总览面板', view: 'version-tree', collapseRight: false },
@@ -21,6 +22,8 @@ interface GlobalToolbarProps {
   rightPanelCollapsed?: boolean;
   /** 切换右栏收起/展开 */
   onToggleRightPanel?: (collapsed: boolean) => void;
+  mobilePane?: MobilePane;
+  onMobileAction?: (action: MobileAction) => void;
 }
 
 export default function GlobalToolbar({
@@ -28,6 +31,8 @@ export default function GlobalToolbar({
   onNavigate,
   rightPanelCollapsed = false,
   onToggleRightPanel,
+  mobilePane = 'workspace',
+  onMobileAction,
 }: GlobalToolbarProps) {
   // 根据 activeView 决定高亮 Tab
   // 右栏收起时高亮"简历版本分支"，展开时高亮"总览面板"
@@ -45,12 +50,28 @@ export default function GlobalToolbar({
     }
   }
 
+  const mobileActions: { action: MobileAction; label: string }[] = [
+    { action: 'resume', label: '简历' },
+    { action: 'materials', label: '资料' },
+    { action: 'knowledge', label: '知识' },
+    { action: 'career', label: '职位' },
+  ];
+
+  function isMobileActionActive(action: MobileAction): boolean {
+    if (action === 'materials') return mobilePane === 'materials';
+    if (action === 'career') return mobilePane === 'career';
+    if (mobilePane !== 'workspace') return false;
+    return action === 'knowledge'
+      ? activeView === 'knowledge'
+      : activeView === 'version-tree';
+  }
+
   return (
     <header
-      className="h-12 bg-bg-secondary border-b border-border-default flex items-center justify-between px-6 sticky top-0 z-50 backdrop-blur-md"
+      className="career-global-toolbar h-12 bg-bg-secondary border-b border-border-default flex items-center justify-between px-6 sticky top-0 z-50 backdrop-blur-md"
     >
       {/* Logo */}
-      <div className="flex items-center gap-2 font-body font-semibold text-text-primary tracking-tight text-sm">
+      <div className="career-toolbar-brand flex items-center gap-2 font-body font-semibold text-text-primary tracking-tight text-sm">
         <svg
           width="20"
           height="20"
@@ -68,18 +89,18 @@ export default function GlobalToolbar({
           <path d="M18 9a9 9 0 0 1-9 9" />
         </svg>
         Resume-Agent
-        <span className="font-mono text-xs text-text-muted bg-bg-tertiary px-2 py-px rounded-sm tracking-wider">
+        <span className="career-toolbar-version font-mono text-xs text-text-muted bg-bg-tertiary px-2 py-px rounded-sm tracking-wider">
           v0.3.1
         </span>
       </div>
 
       {/* Nav tabs — 与左栏导航联动 */}
-      <nav className="flex gap-1">
+      <nav className="career-toolbar-nav career-toolbar-nav-desktop flex gap-1">
         {NAV_TABS.map((tab) => (
           <button
             key={tab.label}
             onClick={() => handleTabClick(tab)}
-            className={`px-4 py-1.5 rounded-md text-sm transition-all border-none cursor-pointer font-body ${
+            className={`career-toolbar-tab px-4 py-1.5 rounded-md text-sm transition-all border-none cursor-pointer font-body ${
               activeLabel === tab.label
                 ? 'text-brand-primary bg-brand-primary-muted font-medium'
                 : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
@@ -90,8 +111,22 @@ export default function GlobalToolbar({
         ))}
       </nav>
 
+      <nav className="career-mobile-pane-nav" aria-label="职业工作台手机导航">
+        {mobileActions.map(({ action, label }) => (
+          <button
+            key={action}
+            type="button"
+            onClick={() => onMobileAction?.(action)}
+            className={isMobileActionActive(action) ? 'is-active' : ''}
+            aria-pressed={isMobileActionActive(action)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
       {/* Right status */}
-      <div className="flex items-center gap-3 text-xs">
+      <div className="career-toolbar-status flex items-center gap-3 text-xs">
         <div
           className="w-1.5 h-1.5 rounded-full"
           style={{ background: 'var(--state-success)', boxShadow: '0 0 6px var(--state-success)' }}

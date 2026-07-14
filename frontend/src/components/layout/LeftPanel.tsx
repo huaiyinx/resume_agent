@@ -111,7 +111,7 @@ export default function LeftPanel({
 
   return (
     <aside
-      className="flex flex-col overflow-y-auto bg-bg-secondary border-r border-border-default"
+      className="career-left-panel flex flex-col overflow-y-auto bg-bg-secondary border-r border-border-default"
       style={{ width: 'var(--left-panel-width)', minWidth: 'var(--left-panel-width)' }}
     >
       {/* Logo area */}
