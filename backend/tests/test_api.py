@@ -140,14 +140,14 @@ def test_upload_docx_creates_record(tmp_path: Path) -> None:
 
 
 def test_upload_rejects_invalid_file_type() -> None:
-    """上传非 pdf/docx 文件应返回错误。"""
+    """上传非 pdf/docx/md/txt 文件应返回错误。"""
     _init_db()
     from resume_agent.main import app
 
     client = TestClient(app)
     response = client.post(
         "/api/resumes/upload",
-        files={"file": ("file.txt", b"hello", "text/plain")},
+        files={"file": ("file.png", b"not-an-image", "image/png")},
     )
 
     assert response.status_code == 200

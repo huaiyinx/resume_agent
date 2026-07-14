@@ -5,6 +5,8 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
+ARG VITE_BASE_PATH=/
+ENV VITE_BASE_PATH=${VITE_BASE_PATH}
 RUN pnpm build
 
 # === Stage 2: 后端运行时 ===
@@ -18,6 +20,7 @@ WORKDIR /app
 # 复制后端依赖文件和源码（uv sync 需要 schema.sql 做 editable install）
 COPY backend/pyproject.toml backend/uv.lock backend/README.md ./
 COPY backend/src ./src
+COPY scripts ./scripts
 RUN uv sync --frozen --no-dev
 
 # 复制前端构建产物到 static/ 目录（FastAPI 静态托管）

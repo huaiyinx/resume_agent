@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     port: int = 5173
     debug: bool = False
     cors_origins: str = "http://localhost:5173"
+    internal_api_token: str = ""
+    max_upload_bytes: int = 20 * 1024 * 1024
 
     model_config = SettingsConfigDict(
         # 从项目根目录和 backend/ 目录都查找 .env

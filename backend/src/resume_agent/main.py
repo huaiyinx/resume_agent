@@ -12,13 +12,14 @@
 from __future__ import annotations
 
 import logging
+import secrets
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from resume_agent.api.gap_report import router as gap_report_router
@@ -74,6 +75,52 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def protect_internal_api(request: Request, call_next):
+        """Require a service token for business APIs and bound upload sizes.
+
+        Production keeps the container on loopback. Nginx will inject the
+        token for authenticated browser traffic, while Love/LifeOS use the
+        same header over VPS loopback. Health remains available for local
+        container probes.
+        """
+
+        path = request.url.path
+        normalized_path = path.rstrip("/") or "/"
+        if path.startswith("/api/") and normalized_path != "/api/health":
+            expected = settings.internal_api_token
+            if expected:
+                supplied = request.headers.get("X-Resume-Agent-Token", "")
+                if not supplied or not secrets.compare_digest(supplied, expected):
+                    return JSONResponse(
+                        status_code=401,
+                        content={
+                            "ok": False,
+                            "data": None,
+                            "error": {
+                                "code": "UNAUTHORIZED",
+                                "message": "需要有效的内部服务令牌",
+                            },
+                        },
+                    )
+
+            if request.method in {"POST", "PUT", "PATCH"}:
+                raw_length = request.headers.get("content-length", "").strip()
+                if raw_length.isdigit() and int(raw_length) > settings.max_upload_bytes:
+                    return JSONResponse(
+                        status_code=413,
+                        content={
+                            "ok": False,
+                            "data": None,
+                            "error": {
+                                "code": "PAYLOAD_TOO_LARGE",
+                                "message": "上传内容超过服务端限制",
+                            },
+                        },
+                    )
+
+        return await call_next(request)
 
     # API 路由
     # 先注册 gap_report 路由，使其优先于 api_router 中的 gap 桩实现

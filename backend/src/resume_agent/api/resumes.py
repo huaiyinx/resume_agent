@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -29,8 +30,8 @@ from resume_agent.services.tree_builder import TreeBuilder
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
 
-# 支持的文件类型
-_ALLOWED_FILE_TYPES: tuple[str, ...] = ("pdf", "docx")
+# 支持的文件类型。LifeOS 冷启动允许直接导入已审阅 Markdown 简历。
+_ALLOWED_FILE_TYPES: tuple[str, ...] = ("pdf", "docx", "md", "txt")
 
 
 class ParseRequest(BaseModel):
@@ -81,6 +82,8 @@ def _extract_text(file_path: Path, file_type: str) -> str:
             pass  # fallback 到本地解析器
 
     # Fallback: 本地解析器
+    if file_type in ("md", "txt"):
+        return file_path.read_text(encoding="utf-8")
     if file_type == "pdf":
         return extract_text_from_pdf(file_path)
     if file_type == "docx":
@@ -119,7 +122,7 @@ async def upload_resume(file: UploadFile) -> dict[str, Any]:
     saved_path.write_bytes(content)
 
     # 写入 DB（file_path 存储相对路径，相对 files_root，使用 POSIX 分隔符保证跨平台一致）
-    relative_path = f"resumes/{saved_filename}"  # noqa: 使用正斜杠保证 Windows/Linux 一致
+    relative_path = f"resumes/{saved_filename}"  # 使用正斜杠保证 Windows/Linux 一致
     with get_connection() as conn:
         conn.execute(
             """
@@ -187,14 +190,12 @@ async def parse_resume(req: ParseRequest) -> dict[str, Any]:
         return error("PARSE_FAILED", f"文件解析失败: {exc}")
 
     # 3.5 将简历文本存入知识库（US-12）
-    try:
-        chunk_count = _index_resume_to_knowledge(
+    with suppress(Exception):  # 知识库存入失败不阻断主流程
+        _index_resume_to_knowledge(
             raw_text,
             record["file_name"],
             req.upload_id,
         )
-    except Exception:  # noqa: BLE001 - 知识库存入失败不阻断主流程
-        chunk_count = 0
 
     # 4. LLM 结构化提取（experience/projects/skills 仍用 extractor）
     try:

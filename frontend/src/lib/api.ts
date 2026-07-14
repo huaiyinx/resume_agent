@@ -29,7 +29,7 @@ import type { TutorResult } from '@/types/tutor';
 import type { PersonalInfo } from '@/types/personal';
 import type { SectionItem } from '@/types/section';
 
-const BASE_URL = '/api';
+const BASE_URL = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/api`;
 
 /**
  * 统一 fetch 封装，自动解析 ApiResponse envelope。
