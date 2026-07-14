@@ -29,7 +29,9 @@ COPY --from=frontend-build /app/frontend/dist ./static
 # 环境变量
 ENV RESUME_AGENT_HOME=/root/.resume-agent
 ENV PYTHONUNBUFFERED=1
+ENV HOST=0.0.0.0
+ENV PORT=5173
 
 EXPOSE 5173
 
-CMD ["uv", "run", "uvicorn", "resume_agent.main:app", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["sh", "-c", "exec /app/.venv/bin/uvicorn resume_agent.main:app --host \"$HOST\" --port \"$PORT\""]
