@@ -6,10 +6,7 @@ services:
       context: .
       args:
         VITE_BASE_PATH: /life/career/
-    ports:
-      - "127.0.0.1:5174:5173"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    network_mode: host
     volumes:
       - /mnt/data/life-os/resume-agent:/root/.resume-agent
       - /mnt/data/life-os/resume-agent-import:/imports:ro
@@ -23,7 +20,7 @@ services:
         - -c
         - >-
           import json,urllib.request;
-          data=json.load(urllib.request.urlopen('http://127.0.0.1:5173/api/health',timeout=5));
+          data=json.load(urllib.request.urlopen('http://127.0.0.1:5174/api/health',timeout=5));
           assert data.get('ok') and data.get('data',{}).get('status')=='ok'
       interval: 30s
       timeout: 8s
